@@ -1,35 +1,33 @@
-function [X, Fs, GT] = importdata(dataset,filename)
+function [X, Fs, GT] = importdata(N,plot)
 
-switch(dataset)
-    
-    case 1
-        load(filename);
-        spike_class = cell2mat(spike_class);
-        spike_times = cell2mat(spike_times);
-        Fs = 1/samplingInterval*1000;
-        X = bandpass(data,[300 3000],Fs);
-        
-        window_size = 64;
-        
-        for i = 1:length(spike_times)
-            spike_window(i,:) = spike_times(1,i) + 1:spike_times(1,i) + window_size;
-            spikes(i,:) = X(spike_window(i,:));
-        end
-        
-        for a = 1:length(spikes)
-            [maxSpike(a), locs(a)] = max(spikes(a,:));
-        end
-        
-        spike_times_max = spike_times + locs;
-        
-        for i = 1:length(spike_times_max)
-            spike_window_max(i,:) = spike_times_max(1,i) + 1 - 24:spike_times_max(1,i) + 40;
-            spikes_max(i,:) = X(spike_window_max(i,:));
-        end
-        
-        GT = [spike_times_max' spike_class'];
-        
-    case 2
-        X = h5read(filename,'/X');
-        Fs = h5read(filename,'/srate');
+filename = ["C_Easy1_noise005"
+    "C_Easy1_noise01"
+    "C_Easy1_noise015"
+    "C_Easy1_noise02"
+    "C_Easy2_noise005"
+    "C_Easy2_noise01"
+    "C_Easy2_noise015"
+    "C_Easy2_noise02"
+    "C_Difficult1_noise005"
+    "C_Difficult1_noise01"
+    "C_Difficult1_noise015"
+    "C_Difficult1_noise02"
+    "C_Difficult2_noise005"
+    "C_Difficult2_noise01"
+    "C_Difficult2_noise015"
+    "C_Difficult2_noise02"];
+
+load(filename(N));
+
+spike_times = cell2mat(spike_times);
+spike_class_1 = cell2mat(spike_class(1))';
+spike_class_2 = cell2mat(spike_class(2))';
+spike_class_3 = cell2mat(spike_class(3))';
+spike_times = spike_times + 22;
+
+Fs = 1/samplingInterval*1e3;
+X = data;
+
+GT = [spike_times' spike_class_1 spike_class_2];
+
 end

@@ -1,14 +1,9 @@
 clear all; close all; clc;
 
 %% LOAD BENCHMARK DATA
+[X, Fs, GT] = importdata(1);
 
-load('C_Easy1_noise005')
-
-Fs = 1/samplingInterval*1e3;
-X = data;
-t = 1:length(X);
-
-% set parameters
+%% SET PARAMETERS
 window_size = 6e-3*Fs;
 threshold = 4*median(abs(X))/0.6745;
 
@@ -69,7 +64,7 @@ plot(t,threshold*ones(1,length(X)));
 
 total = [isolated_index' label];
 
-[precision recall accuracy] = evaluate(spike_times, spike_class_1, total(:,1), total(:,2), 1e-3*Fs);
+[precision recall accuracy] = evaluate(GT(:,1), GT(:,2), total(:,1), total(:,2), 1e-3*Fs);
 
 fprintf('SNR = %d\n',ceil(mean(max(spikes'))/(median(abs(X))/0.6745)));
 

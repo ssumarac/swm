@@ -1,38 +1,41 @@
 clear all; close all; clc;
 
 %% LOAD BENCHMARK DATA
+[X, Fs, GT] = importdata(1);
 
-load('C_Difficult2_noise005')
-
-Fs = 1/samplingInterval*1e3;
-X = data;
-
-% set parameters
-window_size = 2e-3*Fs;
+%% SET PARAMETERS
+window_size = 3e-3*Fs;
 threshold = 4*median(abs(X))/0.6745;
-refractory_period = window_size/2; %in ms
+method = 2;
 
 %% DETECT SPIKES
 [spikes index] = getspikes(X,window_size,threshold,1);
 
-%% DIMENSION REDUCTION
+%% CLUSTERING
 [coeff,score,latent] = pca(spikes);
 features = [score(:,1) score(:,2)];
+
+if method == 1
+    minPts = size(spikes,2) - 1;
+    epsilon = clusterDBSCAN.estimateEpsilon(spikes,2,minPts);
+    idx = dbscan(features,epsilon,minPts);
+elseif method == 2
+    rng('default')
+    idx = kmeans(features,3);
+end
+
+%% EVALUATE PERFORMANCE
+
+[precision recall accuracy] = evaluate(GT(:,1), GT(:,2), index, idx, 1e-3*Fs);
+fprintf('SNR = %d\n',ceil(mean(max(spikes'))/(median(abs(X))/0.6745)));
+
+%% PLOTS
 
 % figure
 % scatter(score(:,1),score(:,2),'.');
 % title('Dimentional Reduction In Feature Space')
 % xlabel('1st Principal Component')
 % ylabel('2nd Principal Component')
-
-%% CLUSTERING
-
-minPts = size(spikes,2) - 1;
-epsilon = clusterDBSCAN.estimateEpsilon(spikes,2,minPts);
-idx = dbscan(spikes,epsilon,minPts);
-
-% rng(1)
-% idx = kmeans(features,3);
 
 % figure
 % gscatter(score(:,1),score(:,2),idx);
@@ -41,13 +44,11 @@ idx = dbscan(spikes,epsilon,minPts);
 %     spks_tot(a) = sum(idx == a);
 %     fprintf('Spike %d: %d\n', a, spks_tot(a));
 % end
-% 
+%
 % fprintf('Total Spikes: %d\n',sum(spks_tot));
 
-%% PLOTS
-
 % colour = ['r','b','g'];
-% 
+%
 % figure
 % for b = 1:max(idx)
 %     subplot(max(idx),1,b);
@@ -56,17 +57,3 @@ idx = dbscan(spikes,epsilon,minPts);
 %     xlabel('Samples')
 %     ylabel('Voltage(uV)')
 % end
-
-%% LOAD GROUND TRUTH
-
-spike_times = cell2mat(spike_times);
-spike_class_1 = cell2mat(spike_class(1))';
-spike_class_2 = cell2mat(spike_class(2))';
-spike_class_3 = cell2mat(spike_class(3))';
-spike_times = spike_times + 22;
-
-%% EVALUATE PERFORMANCE
-
-[precision recall accuracy] = evaluate(spike_times, spike_class_1, index, idx, 1e-3*Fs);
-
-fprintf('SNR = %d\n',ceil(mean(max(spikes'))/(median(abs(X))/0.6745)));

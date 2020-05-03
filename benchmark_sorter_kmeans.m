@@ -1,13 +1,9 @@
 clear all; close all; clc;
 
 %% LOAD BENCHMARK DATA
+[X, Fs, GT] = importdata(1);
 
-load('C_Easy1_noise005')
-
-Fs = 1/samplingInterval*1e3;
-X = data;
-
-% set parameters
+%% SET PARAMETERS
 window_size = 2e-3*Fs;
 threshold = 4*median(abs(X))/0.6745;
 refractory_period = window_size/2; %in ms
@@ -175,18 +171,9 @@ total = combined_output;
 
 total = sortrows(total);
 
-
-%% LOAD GROUND TRUTH
-
-spike_times = cell2mat(spike_times);
-spike_class_1 = cell2mat(spike_class(1))';
-spike_class_2 = cell2mat(spike_class(2))';
-spike_class_3 = cell2mat(spike_class(3))';
-spike_times = spike_times + 22;
-
 %%  EVALUATE PERFORMANCE
 
-[precision recall accuracy] = evaluate(spike_times, spike_class_1, total(:,1), total(:,2), 1e-3*Fs);
+[precision recall accuracy] = evaluate(GT(:,1), GT(:,2), total(:,1), total(:,2), 1e-3*Fs);
 
 fprintf('SNR = %d\n',ceil(mean(max(spikes'))/(median(abs(X))/0.6745)));
 

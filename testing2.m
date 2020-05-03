@@ -4,6 +4,8 @@ clear all; close all; clc;
 
 load('C_Easy1_noise005')
 
+%testchanges
+
 Fs = 1/samplingInterval*1e3;
 X = data;
 t = 1:length(X);

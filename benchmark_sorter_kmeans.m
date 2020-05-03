@@ -182,11 +182,7 @@ spike_times = cell2mat(spike_times);
 spike_class_1 = cell2mat(spike_class(1))';
 spike_class_2 = cell2mat(spike_class(2))';
 spike_class_3 = cell2mat(spike_class(3))';
-spikesgt = getspikesgt(X,window_size,spike_times);
-for v = 1:length(spikesgt)
-    [max_gt loc_gt(v)] = max(spikesgt(7,:));
-end
-spike_times = spike_times + mean(loc_gt);
+spike_times = spike_times + 22;
 
 %%  EVALUATE PERFORMANCE
 

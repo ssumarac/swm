@@ -6,16 +6,34 @@ load('C_Easy1_noise005')
 
 Fs = 1/samplingInterval*1e3;
 X = data;
+t = 1:length(X);
 
 % set parameters
-window_size = 2e-3*Fs;
+window_size = 6e-3*Fs;
 threshold = 4*median(abs(X))/0.6745;
 
 %% DETECT SPIKES
 [spikes index] = getspikes(X,window_size,threshold,0);
 
-%% DIMENSION REDUCTION
-[coeff,score,latent] = pca(spikes);
+b = 1;
+for a = 1:length(spikes)
+    [peaks_pos,index_pos] = findpeaks(spikes(a,:),'MinPeakHeight',threshold);
+    [peaks_neg,index_neg] = findpeaks(-spikes(a,:),'MinPeakHeight',threshold);
+    warning('off')
+    count_pos(a) = length(peaks_pos);
+    count_neg(a) = length(peaks_neg);
+end
+
+isolated_spikes = spikes(and(count_pos == 1,count_neg == 1),:);
+isolated_index = index(and(count_pos == 1,count_neg == 1));
+
+figure; plot(1:window_size,isolated_spikes); hold on;
+plot(1:window_size,threshold*ones(1,window_size),'r*'); hold on;
+plot(1:window_size,-threshold*ones(1,window_size),'r*');
+
+%% CLUSTERING
+
+[coeff,score,latent] = pca(isolated_spikes);
 features = [score(:,1) score(:,2)];
 
 figure
@@ -24,38 +42,14 @@ title('Dimentional Reduction In Feature Space')
 xlabel('1st Principal Component')
 ylabel('2nd Principal Component')
 
-%% CLUSTERING
-
-% minPts = size(spikes,2) - 1;
-% epsilon = clusterDBSCAN.estimateEpsilon(spikes,2,minPts);
-% 
-% idx = dbscan(spikes,epsilon,minPts);
-
 rng(1)
-idx = kmeans(features,3);
-% 
-figure
-gscatter(score(:,1),score(:,2),idx);
-% 
-% for a = 1:max(idx)
-%     spks_tot(a) = sum(idx == a);
-%     fprintf('Spike %d: %d\n', a, spks_tot(a));
-% end
-% 
-% fprintf('Total Spikes: %d\n',sum(spks_tot));
-
-%% PLOTS
-
-colour = ['r','b','g'];
+label = kmeans(features,3);
 
 figure
-for b = 1:max(idx)
-    subplot(max(idx),1,b);
-    plot(1:window_size/2, spikes(idx == b,:), colour(b)); hold on;
-    title('Sorting of Extracted Spike Waveforms')
-    xlabel('Samples')
-    ylabel('Voltage(uV)')
-end
+gscatter(score(:,1),score(:,2),label);
+title('Dimentional Reduction In Feature Space')
+xlabel('1st Principal Component')
+ylabel('2nd Principal Component')
 
 %% LOAD GROUND TRUTH
 
@@ -63,14 +57,22 @@ spike_times = cell2mat(spike_times);
 spike_class_1 = cell2mat(spike_class(1))';
 spike_class_2 = cell2mat(spike_class(2))';
 spike_class_3 = cell2mat(spike_class(3))';
-spikesgt = getspikesgt(X,window_size,spike_times);
-for v = 1:length(spikesgt)
-    [max_gt loc_gt(v)] = max(spikesgt(7,:));
-end
-spike_times = spike_times + mean(loc_gt);
+spike_times = spike_times + 22;
 
-%% EVALUATE PERFORMANCE
+figure
+plot(t,X); hold on;
+plot(t(index), X(index),'r*'); hold on;
+plot(t(spike_times), X(spike_times),'bs'); hold on;
+plot(t,threshold*ones(1,length(X)));
 
-[precision recall accuracy] = evaluate(spike_times, spike_class_1, locs, idx, 1e-3*Fs);
+%%  EVALUATE PERFORMANCE
+
+total = [isolated_index' label];
+
+[precision recall accuracy] = evaluate(spike_times, spike_class_1, total(:,1), total(:,2), 1e-3*Fs);
 
 fprintf('SNR = %d\n',ceil(mean(max(spikes'))/(median(abs(X))/0.6745)));
+
+
+
+

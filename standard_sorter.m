@@ -30,7 +30,7 @@ end
 fprintf('SNR = %d\n',ceil(mean(max(spikes'))/(median(abs(X))/0.6745)));
 
 %% PLOTS
-
+%
 % figure
 % scatter(score(:,1),score(:,2),'.');
 % title('Dimentional Reduction In Feature Space')

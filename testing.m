@@ -64,7 +64,7 @@ plot(t,threshold*ones(1,length(X)));
 
 total = [isolated_index' label];
 
-[precision recall accuracy] = evaluate(GT(:,1), GT(:,2), total(:,1), total(:,2), 1e-3*Fs);
+[precision recall accuracy] = EvaluatePerformance(GT(:,1), GT(:,2), total(:,1), total(:,2), 1e-3*Fs);
 
 fprintf('SNR = %d\n',ceil(mean(max(spikes'))/(median(abs(X))/0.6745)));
 

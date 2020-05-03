@@ -26,7 +26,7 @@ end
 
 %% EVALUATE PERFORMANCE
 
-[precision recall accuracy] = evaluate(GT(:,1), GT(:,2), index, idx, 1e-3*Fs);
+[precision recall accuracy] = EvaluatePerformance(GT(:,1), GT(:,2), index, idx, 1e-3*Fs);
 fprintf('SNR = %d\n',ceil(mean(max(spikes'))/(median(abs(X))/0.6745)));
 
 %% PLOTS

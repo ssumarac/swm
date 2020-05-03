@@ -1,4 +1,4 @@
-function [precision recall accuracy] = evaluate(spike_times, spike_class_1, locs, idx, delta_t)
+function [precision recall accuracy] = EvaluatePerformance(spike_times, spike_class_1, locs, idx, delta_t)
 
 s = spike_times;
 

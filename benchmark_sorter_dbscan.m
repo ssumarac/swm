@@ -30,7 +30,7 @@ label = dbscan(spikes,epsilon,minPts);
 
 overlapped = spikes(label == -1,:);
 
-[overlapped_label,PsC_score] = matching(overlapped,overlapped_template);
+[overlapped_label,PsC_score] = CorrelationMatching(overlapped,overlapped_template);
 
 P = perms(1:max(label));
 P = [P(:,end-1:end); [1:max(label); 1:max(label)]'];
@@ -72,7 +72,7 @@ total = sortrows(total);
 
 %%  EVALUATE PERFORMANCE
 
-[precision recall accuracy] = evaluate(GT(:,1), GT(:,2), total(:,1), total(:,2), 1e-3*Fs);
+[precision recall accuracy] = EvaluatePerformance(GT(:,1), GT(:,2), total(:,1), total(:,2), 1e-3*Fs);
 
 fprintf('SNR = %d\n',ceil(mean(max(spikes'))/(median(abs(X))/0.6745)));
 

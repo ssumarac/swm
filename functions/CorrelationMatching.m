@@ -1,4 +1,4 @@
-function [tidx,val] = matching(spikes,template)
+function [tidx,val] = CorrelationMatching(spikes,template)
 
 for s = 1:size(spikes,1)
     

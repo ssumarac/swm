@@ -8,8 +8,12 @@ window_size = 2e-3*Fs;
 threshold = 4*median(abs(X))/0.6745;
 refractory_period = window_size/2; %in ms
 
+cut = 0;
+to_plot = 0;
+
+
 %% DETECT SPIKES
-[spikes_combined index] = GetSpikes(X,window_size,threshold,0);
+[spikes_combined index] = GetSpikes(X,window_size,threshold,cut);
 
 spikes_combined_count = 1:length(spikes_combined);
 
@@ -81,7 +85,7 @@ fprintf('Total Spikes: %d\n',sum(spks_tot));
 
 %% OVERLAPPING TEMPLATE
 
-[overlapped_template,overlapped_locations] = GetTemplates(window_size,spikes,label,0);
+[overlapped_template,overlapped_locations] = GetTemplates(window_size,spikes,label,to_plot);
 
 [tidx,val] = CorrelationMatching(overlapped,overlapped_template);
 

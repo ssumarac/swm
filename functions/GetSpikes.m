@@ -1,4 +1,4 @@
-function [spikes index] = GetSpikes(X,window_size,threshold,cut)
+function [spikes index window_size] = GetSpikes(X,window_size,threshold,cut)
 
 [peaks, index] = findpeaks(X,'MinPeakHeight',threshold,'MinPeakDistance',window_size);
 
@@ -10,8 +10,10 @@ end
 
 if cut == 1
     spikes = spikes(:,1 + window_size/3:window_size - window_size/3);
+    window_size = window_size/3;
 else
     spikes = spikes;
+    window_size = window_size;
 end
 
 end

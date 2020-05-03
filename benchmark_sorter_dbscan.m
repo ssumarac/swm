@@ -8,8 +8,11 @@ window_size = 3e-3*Fs;
 threshold = 4*median(abs(X))/0.6745;
 refractory_period = window_size/2; %in ms
 
+cut = 0;
+to_plot = 0;
+
 %% DETECT SPIKES
-[spikes index] = GetSpikes(X,window_size,threshold,1);
+[spikes index window_size] = GetSpikes(X,window_size,threshold,cut);
 
 %% INITIAL CLUSTERING
 [coeff,score,latent] = pca(spikes);
@@ -22,9 +25,7 @@ label = dbscan(spikes,epsilon,minPts);
 
 %% BUILD OVERLAPPING TEMPLATES
 
-[overlapped_template,overlapped_locations] = GetTemplates(window_size,spikes,label,0);
-
-
+[overlapped_template,overlapped_locations] = GetTemplates(window_size,spikes,label,to_plot);
 
 %% TEMPLATE MATCHING
 

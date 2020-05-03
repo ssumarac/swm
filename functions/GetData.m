@@ -1,4 +1,4 @@
-function [X, Fs, GT] = importdata(N,plot)
+function [X, Fs, GT] = GetData(N,plot)
 
 filename = ["C_Easy1_noise005"
     "C_Easy1_noise01"

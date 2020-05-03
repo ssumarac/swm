@@ -1,7 +1,7 @@
 clear all; close all; clc;
 
 %% LOAD BENCHMARK DATA
-[X, Fs, GT] = importdata(1);
+[X, Fs, GT] = GetData(1);
 
 %% SET PARAMETERS
 window_size = 3e-3*Fs;
@@ -9,7 +9,7 @@ threshold = 4*median(abs(X))/0.6745;
 refractory_period = window_size/2; %in ms
 
 %% DETECT SPIKES
-[spikes index] = getspikes(X,window_size,threshold,1);
+[spikes index] = GetSpikes(X,window_size,threshold,1);
 
 %% INITIAL CLUSTERING
 [coeff,score,latent] = pca(spikes);
@@ -22,7 +22,7 @@ label = dbscan(spikes,epsilon,minPts);
 
 %% BUILD OVERLAPPING TEMPLATES
 
-[overlapped_template,overlapped_locations] = templates(window_size,spikes,label,0);
+[overlapped_template,overlapped_locations] = GetTemplates(window_size,spikes,label,0);
 
 
 

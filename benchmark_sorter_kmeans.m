@@ -1,7 +1,7 @@
 clear all; close all; clc;
 
 %% LOAD BENCHMARK DATA
-[X, Fs, GT] = importdata(1);
+[X, Fs, GT] = GetData(1);
 
 %% SET PARAMETERS
 window_size = 2e-3*Fs;
@@ -9,7 +9,7 @@ threshold = 4*median(abs(X))/0.6745;
 refractory_period = window_size/2; %in ms
 
 %% DETECT SPIKES
-[spikes_combined index] = getspikes(X,window_size,threshold,0);
+[spikes_combined index] = GetSpikes(X,window_size,threshold,0);
 
 spikes_combined_count = 1:length(spikes_combined);
 
@@ -81,7 +81,7 @@ fprintf('Total Spikes: %d\n',sum(spks_tot));
 
 %% OVERLAPPING TEMPLATE
 
-[overlapped_template,overlapped_locations] = templates(window_size,spikes,label,0);
+[overlapped_template,overlapped_locations] = GetTemplates(window_size,spikes,label,0);
 
 [tidx,val] = CorrelationMatching(overlapped,overlapped_template);
 

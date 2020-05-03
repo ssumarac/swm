@@ -1,14 +1,14 @@
 clear all; close all; clc;
 
 %% LOAD BENCHMARK DATA
-[X, Fs, GT] = importdata(1);
+[X, Fs, GT] = GetData(1);
 
 %% SET PARAMETERS
 window_size = 6e-3*Fs;
 threshold = 4*median(abs(X))/0.6745;
 
 %% DETECT SPIKES
-[spikes index] = getspikes(X,window_size,threshold,0);
+[spikes index] = GetSpikes(X,window_size,threshold,0);
 
 b = 1;
 for a = 1:length(spikes)

@@ -4,11 +4,9 @@ clear all; close all; clc;
 [X, Fs, GT] = GetData(1);
 
 %% SET PARAMETERS
-window_size = 3e-3*Fs;
+window_size = 2e-3*Fs;
 threshold = 4*median(abs(X))/0.6745;
-refractory_period = window_size/2; %in ms
-
-cut = 0;
+cut = 1;
 to_plot = 0;
 
 %% DETECT SPIKES
@@ -29,52 +27,23 @@ label = dbscan(spikes,epsilon,minPts);
 
 %% TEMPLATE MATCHING
 
-overlapped = spikes(label == -1,:);
+overlapped_spikes = spikes(label == -1,:);
 
-[overlapped_label,PsC_score] = CorrelationMatching(overlapped,overlapped_template);
+[label_shifted, label_detected, index_shifted, PsC_score] = CorrelationMatching(overlapped_spikes,overlapped_template,label,window_size,index);
 
-P = perms(1:max(label));
-P = [P(:,end-1:end); [1:max(label); 1:max(label)]'];
-P = sortrows(P);
-P = unique(P,'rows');
+%% PRE-EVALUATION
+output_shifted = [index_shifted; label_shifted]';
 
-for d=0:(max(label))^2 - 1
-    for e = 1:length(overlapped_label)
-        if (overlapped_label(e) >= 1 + d*window_size) & (overlapped_label(e) <= (d+1)*window_size)
-            overlapped_label_shifted(e) = P(d+1,2)';
-            overlapped_label_detected(e) = P(d+1,1)';
-        end
-    end
-end
+label(label == -1) = label_detected;
+output_detected = [index' label];
 
-locs_overlapped = index(label == -1);
-
-for j = 1:length(locs_overlapped)
-    if overlapped_locations(j) > refractory_period
-        locs_overlapped_shifted(j) = index(j) + overlapped_locations(j);
-    else
-        locs_overlapped_shifted(j) = index(j) - overlapped_locations(j);
-    end
-end
-
-%%
-
-cutoff = PsC_score > 1;
-
-overlapped_shifted_output = [locs_overlapped_shifted(cutoff); overlapped_label_shifted(cutoff)]';
-
-label(label == -1) = overlapped_label_detected;
-
-combined_output = [index' label];
-
-total = [overlapped_shifted_output; combined_output];
-total = sortrows(total);
+output = [output_shifted; output_detected];
+output = sortrows(output);
 
 
 %%  EVALUATE PERFORMANCE
 
-[precision recall accuracy] = EvaluatePerformance(GT(:,1), GT(:,2), total(:,1), total(:,2), 1e-3*Fs);
-
+[precision recall accuracy] = EvaluatePerformance(GT(:,1), GT(:,2), output(:,1), output(:,2), 1e-3*Fs);
 fprintf('SNR = %d\n',ceil(mean(max(spikes'))/(median(abs(X))/0.6745)));
 
 

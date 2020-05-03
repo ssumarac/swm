@@ -13,7 +13,7 @@ t = 1:length(X);
 % set parameters
 window_size = 3e-3*Fs;
 threshold = 4*median(abs(X))/0.6745;
-refractory_period = window_size; %in ms
+refractory_period = window_size/2; %in ms
 
 %% DETECT SPIKES
 [peaks,location] = findpeaks(X,'MinPeakHeight',threshold,'MinPeakDistance',refractory_period);

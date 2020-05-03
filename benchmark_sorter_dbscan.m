@@ -2,7 +2,7 @@ clear all; close all; clc;
 
 %% LOAD BENCHMARK DATA
 
-load('C_Difficult2_noise005')
+load('C_Easy1_noise005')
 
 Fs = 1/samplingInterval*1e3;
 X = data;
@@ -13,9 +13,7 @@ threshold = 4*median(abs(X))/0.6745;
 refractory_period = window_size/2; %in ms
 
 %% DETECT SPIKES
-[spikes locs] = getspikes(X,window_size,threshold,Fs,refractory_period);
-
-spikes = spikes(:,1+refractory_period/2:window_size-refractory_period/2);
+[spikes index] = getspikes(X,window_size,threshold,1);
 
 %% DIMENSION REDUCTION
 [coeff,score,latent] = pca(spikes);
@@ -55,17 +53,17 @@ end
 
 overlapped = spikes(label == -1,:);
 
-[overlapped_label,PsC_score] = templatematching(overlapped,overlapped_template,1);
+[overlapped_label,PsC_score] = templatematching(overlapped,overlapped_template,2);
 
-for iii = 48
-figure;
-subplot(2,1,1)
-plot(1:24,overlapped(iii,:))
-title('Overlapped')
-subplot(2,1,2)
-plot(1:24, overlapped_template(overlapped_label(iii),:))
-title('Template')
-end
+% for iii = 48
+% figure;
+% subplot(2,1,1)
+% plot(1:24,overlapped(iii,:))
+% title('Overlapped')
+% subplot(2,1,2)
+% plot(1:24, overlapped_template(overlapped_label(iii),:))
+% title('Template')
+% end
 
 P = perms(1:max(label));
 P = [P(:,end-1:end); [1:max(label); 1:max(label)]'];
@@ -81,13 +79,13 @@ for d=0:(max(label))^2 - 1
     end
 end
 
-locs_overlapped = locs(label == -1);
+locs_overlapped = index(label == -1);
 
 for j = 1:length(locs_overlapped)
     if temporary(j) > refractory_period
-        locs_overlapped_shifted(j) = locs(j) + temporary(j);
+        locs_overlapped_shifted(j) = index(j) + temporary(j);
     else
-        locs_overlapped_shifted(j) = locs(j) - temporary(j);
+        locs_overlapped_shifted(j) = index(j) - temporary(j);
     end
 end
 
@@ -117,7 +115,7 @@ overlapped_shifted_output = [locs_overlapped_shifted(cutoff); overlapped_label_s
 
 label(label == -1) = overlapped_label_detected;
 
-combined_output = [locs' label];
+combined_output = [index' label];
 
 total = [overlapped_shifted_output; combined_output];
 total = sortrows(total);
@@ -139,20 +137,21 @@ spike_times = spike_times + mean(loc_gt);
 
 [precision recall accuracy] = evaluate(spike_times, spike_class_1, total(:,1), total(:,2), 1e-3*Fs);
 
-
-%% PLOTS
-
-colour = ['r','b','g'];
-
-figure
-for b = 1:max(label)
-    subplot(max(label),1,b);
-    plot(1:window_size/2, spikes(label == b,:), colour(b)); hold on;
-    title('Sorting of Extracted Spike Waveforms')
-    xlabel('Samples')
-    ylabel('Voltage(uV)')
-end
-
 fprintf('SNR = %d\n',ceil(mean(max(spikes'))/(median(abs(X))/0.6745)));
+
+% %% PLOTS
+% 
+% colour = ['r','b','g'];
+% 
+% figure
+% for b = 1:max(label)
+%     subplot(max(label),1,b);
+%     plot(1:window_size/2, spikes(label == b,:), colour(b)); hold on;
+%     title('Sorting of Extracted Spike Waveforms')
+%     xlabel('Samples')
+%     ylabel('Voltage(uV)')
+% end
+% 
+% fprintf('SNR = %d\n',ceil(mean(max(spikes'))/(median(abs(X))/0.6745)));
 
 

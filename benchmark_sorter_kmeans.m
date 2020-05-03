@@ -10,11 +10,10 @@ X = data;
 % set parameters
 window_size = 2e-3*Fs;
 threshold = 4*median(abs(X))/0.6745;
-%threshold2 = 3*median(abs(X))/0.6745;
 refractory_period = window_size/2; %in ms
 
 %% DETECT SPIKES
-[spikes_combined locs_combined] = getspikes(X,window_size,threshold,Fs,refractory_period);
+[spikes_combined index] = getspikes(X,window_size,threshold,0);
 
 spikes_combined_count = 1:length(spikes_combined);
 
@@ -40,7 +39,7 @@ overlapped_logical = (count_pos == 2);
 
 overlapped_idx = spikes_combined_count(overlapped_logical);
 
-locs_overlapped_detected = locs_combined(overlapped_logical);
+locs_overlapped_detected = index(overlapped_logical);
 
 for ii = 1:length(temp_locs_array)
     if temp_locs_array(ii) > refractory_period
@@ -168,7 +167,7 @@ overlapped_shifted_output = [locs_overlapped_shifted; tidx_overlapped_shifted]';
 
 idx_combined(overlapped_logical) = tidx_overlapped_detected;
 
-combined_output = [locs_combined' idx_combined];
+combined_output = [index' idx_combined];
 
 %total = [overlapped_shifted_output; combined_output];
 

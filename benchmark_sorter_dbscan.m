@@ -8,9 +8,10 @@ window_size = 2e-3*Fs;
 threshold = 4*median(abs(X))/0.6745;
 cut = 1;
 to_plot = 0;
+isolated = 0;
 
 %% DETECT SPIKES
-[spikes index window_size] = GetSpikes(X,window_size,threshold,cut);
+[spikes, index, window_size] = GetSpikes(X,window_size,threshold,cut,isolated);
 
 %% INITIAL CLUSTERING
 [coeff,score,latent] = pca(spikes);
@@ -43,7 +44,7 @@ output = sortrows(output);
 
 %%  EVALUATE PERFORMANCE
 
-[precision recall accuracy] = EvaluatePerformance(GT(:,1), GT(:,2), output(:,1), output(:,2), 1e-3*Fs);
+[precision, recall, accuracy] = EvaluatePerformance(GT(:,1), GT(:,2), output(:,1), output(:,2), 1e-3*Fs);
 fprintf('SNR = %d\n',ceil(mean(max(spikes'))/(median(abs(X))/0.6745)));
 
 

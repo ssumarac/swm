@@ -8,9 +8,10 @@ window_size = 2e-3*Fs;
 threshold = 4*median(abs(X))/0.6745;
 cut = 1;
 method = 1;
+isolated = 0;
 
 %% DETECT SPIKES
-[spikes index window_size] = GetSpikes(X,window_size,threshold,cut);
+[spikes, index, window_size] = GetSpikes(X,window_size,threshold,cut,isolated);
 
 %% CLUSTERING
 [coeff,score,latent] = pca(spikes);
@@ -19,15 +20,15 @@ features = [score(:,1) score(:,2)];
 if method == 1
     minPts = size(spikes,2) - 1;
     epsilon = clusterDBSCAN.estimateEpsilon(spikes,2,minPts);
-    idx = dbscan(features,epsilon,minPts);
+    label = dbscan(features,epsilon,minPts);
 elseif method == 2
     rng('default')
-    idx = kmeans(features,3);
+    label = kmeans(features,3);
 end
 
 %% EVALUATE PERFORMANCE
 
-[precision recall accuracy] = EvaluatePerformance(GT(:,1), GT(:,2), index, idx, 1e-3*Fs);
+[precision, recall, accuracy] = EvaluatePerformance(GT(:,1), GT(:,2), index, label, 1e-3*Fs);
 fprintf('SNR = %d\n',ceil(mean(max(spikes'))/(median(abs(X))/0.6745)));
 
 %% PLOTS

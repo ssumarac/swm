@@ -10,17 +10,17 @@ refractory_period = window_size/2; %in ms
 
 cut = 0;
 to_plot = 0;
-
+isolated = 0;
 
 %% DETECT SPIKES
-[spikes_combined index] = GetSpikes(X,window_size,threshold,cut);
+[spikes, index, window_size] = GetSpikes(X,window_size,threshold,cut,isolated);
 
-spikes_combined_count = 1:length(spikes_combined);
+spikes_combined_count = 1:length(spikes);
 
 x = 1;
-for i = 1:size(spikes_combined,1)
+for i = 1:size(spikes,1)
     
-    [temp_pos temp_locs] = findpeaks(spikes_combined(i,:),'MinPeakHeight',threshold);
+    [temp_pos, temp_locs] = findpeaks(spikes(i,:),'MinPeakHeight',threshold);
     warning('off')
     
     if length(temp_pos) == 2
@@ -51,12 +51,12 @@ end
 
 spikes_idx = spikes_combined_count(not(overlapped_logical));
 
-overlapped = spikes_combined(overlapped_idx,:);
-spikes = spikes_combined(spikes_idx,:);
+overlapped = spikes(overlapped_idx,:);
+spikes = spikes(spikes_idx,:);
 
 
 %% DIMENSION REDUCTION
-[coeff,score,latent] = pca(spikes_combined);
+[coeff,score,latent] = pca(spikes);
 features = [score(:,1) score(:,2)];
 
 figure
@@ -157,7 +157,7 @@ total = sortrows(total);
 
 %%  EVALUATE PERFORMANCE
 
-[precision recall accuracy] = EvaluatePerformance(GT(:,1), GT(:,2), total(:,1), total(:,2), 1e-3*Fs);
+[precision, recall, accuracy] = EvaluatePerformance(GT(:,1), GT(:,2), total(:,1), total(:,2), 1e-3*Fs);
 
 fprintf('SNR = %d\n',ceil(mean(max(spikes'))/(median(abs(X))/0.6745)));
 

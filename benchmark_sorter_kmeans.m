@@ -66,13 +66,13 @@ ylabel('2nd Principal Component')
 rng(1)
 idx_combined = kmeans(features,3);
 
-idx_spikes = idx_combined(spikes_idx);
+label = idx_combined(spikes_idx);
 
 figure
 gscatter(score(:,1),score(:,2),idx_combined);
 
-for a = 1:max(idx_spikes)
-    spks_tot(a) = sum(idx_spikes == a);
+for a = 1:max(label)
+    spks_tot(a) = sum(label == a);
     fprintf('Spike %d: %d\n', a, spks_tot(a));
 end
 
@@ -81,29 +81,9 @@ fprintf('Total Spikes: %d\n',sum(spks_tot));
 
 %% OVERLAPPING TEMPLATE
 
-%figure
-c = 1;
-for a = 1:max(idx_combined)
-    for b = 1:max(idx_combined)
-        template(b,:) = mean(spikes_combined(idx_combined == b,:));
-        temp1(b,:) = [zeros(1,window_size/2) template(b,:) zeros(1,window_size/2)];
-        
-        for i = 1:window_size
-            
-            temp2 = [zeros(1,i) template(b,:) zeros(1,window_size-i)];
-            temp3 = temp1(a,:) + temp2;
-            overlapped_template(c,:) = temp3(:,window_size/2 + 1:length(temp1) - window_size/2);
-            
-            %plot(1:window_size,overlapped_template(c,:),'r*-');
-            %axis([1 window_size -2 2])
-            %drawnow;
-            
-            c = c + 1;
-        end
-    end
-end
+[overlapped_template,overlapped_locations] = templates(window_size,spikes,label,0);
 
-[tidx,val] = templatematching(overlapped,overlapped_template,1);
+[tidx,val] = matching(overlapped,overlapped_template);
 
 % iii = 60
 % figure;
@@ -151,7 +131,7 @@ fprintf('\n')
 
 for g = 1:max(idx_combined)
     to_add(g) = sum([overlapped_count' overlapped_count'] .* (P == g),'all');
-    spks_tot(g) = sum(idx_spikes == g) + to_add(g);
+    spks_tot(g) = sum(label == g) + to_add(g);
     fprintf('Spike %d: %d\n', g, spks_tot(g));
 end
 

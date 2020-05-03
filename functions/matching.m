@@ -1,4 +1,4 @@
-function [tidx,val] = templatematching(spikes,template,type)
+function [tidx,val] = matching(spikes,template)
 
 for s = 1:size(spikes,1)
     

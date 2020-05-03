@@ -4,62 +4,33 @@ clear all; close all; clc;
 [X, Fs, GT] = importdata(1);
 
 %% SET PARAMETERS
-window_size = 2e-3*Fs;
+window_size = 3e-3*Fs;
 threshold = 4*median(abs(X))/0.6745;
 refractory_period = window_size/2; %in ms
 
 %% DETECT SPIKES
 [spikes index] = getspikes(X,window_size,threshold,1);
 
-%% DIMENSION REDUCTION
+%% INITIAL CLUSTERING
 [coeff,score,latent] = pca(spikes);
 features = [score(:,1) score(:,2)];
 
-%% CLUSTERING
 minPts = size(spikes,2) - 1;
 epsilon = clusterDBSCAN.estimateEpsilon(spikes,2,minPts);
 
 label = dbscan(spikes,epsilon,minPts);
 
-%% OVERLAPPING TEMPLATE
+%% BUILD OVERLAPPING TEMPLATES
 
-%figure
-c = 1;
-for a = 1:max(label)
-    for b = 1:max(label)
-        template(b,:) = mean(spikes(label == b,:));
-        temp1(b,:) = [zeros(1,window_size/2) template(b,:) zeros(1,window_size/2)];
-        
-        for i = 1:window_size
-            
-            temp2 = [zeros(1,i) template(b,:) zeros(1,window_size-i)];
-            temp3 = temp1(a,:) + temp2;
-            overlapped_template(c,:) = temp3(:,window_size/2 + 1:length(temp1) - window_size/2);
-            
-            temporary(c) = i;
-            
-                        %plot(1:window_size,overlapped_template(c,:),'r*-');
-            %axis([1 window_size -2 2])
-            %drawnow;
-            
-            c = c + 1;
-        end
-    end
-end
+[overlapped_template,overlapped_locations] = templates(window_size,spikes,label,0);
+
+
+
+%% TEMPLATE MATCHING
 
 overlapped = spikes(label == -1,:);
 
-[overlapped_label,PsC_score] = templatematching(overlapped,overlapped_template,2);
-
-% for iii = 48
-% figure;
-% subplot(2,1,1)
-% plot(1:24,overlapped(iii,:))
-% title('Overlapped')
-% subplot(2,1,2)
-% plot(1:24, overlapped_template(overlapped_label(iii),:))
-% title('Template')
-% end
+[overlapped_label,PsC_score] = matching(overlapped,overlapped_template);
 
 P = perms(1:max(label));
 P = [P(:,end-1:end); [1:max(label); 1:max(label)]'];
@@ -78,30 +49,12 @@ end
 locs_overlapped = index(label == -1);
 
 for j = 1:length(locs_overlapped)
-    if temporary(j) > refractory_period
-        locs_overlapped_shifted(j) = index(j) + temporary(j);
+    if overlapped_locations(j) > refractory_period
+        locs_overlapped_shifted(j) = index(j) + overlapped_locations(j);
     else
-        locs_overlapped_shifted(j) = index(j) - temporary(j);
+        locs_overlapped_shifted(j) = index(j) - overlapped_locations(j);
     end
 end
-
-
-%% FINAL RESULTS
-
-% for f = 1:(max(label))^2
-%     overlapped_count(f) = sum(tidx_cut == f);
-%     fprintf('Spike %d and Spike %d: %d\n',P(f,1), P(f,2), overlapped_count(f));
-% end
-% 
-% fprintf('\n')
-% 
-% for g = 1:max(label)
-%     to_add(g) = sum([overlapped_count' overlapped_count'] .* (P == g),'all');
-%     spks_tot(g) = sum(idx_spikes == g) + to_add(g);
-%     fprintf('Spike %d: %d\n', g, spks_tot(g));
-% end
-% 
-% fprintf('Total Spikes: %d\n',sum(spks_tot));
 
 %%
 
@@ -117,32 +70,10 @@ total = [overlapped_shifted_output; combined_output];
 total = sortrows(total);
 
 
-%% LOAD GROUND TRUTH
-
-spike_times = cell2mat(spike_times);
-spike_class_1 = cell2mat(spike_class(1))';
-spike_class_2 = cell2mat(spike_class(2))';
-spike_class_3 = cell2mat(spike_class(3))';
-spike_times = spike_times + 22;
-
 %%  EVALUATE PERFORMANCE
 
 [precision recall accuracy] = evaluate(GT(:,1), GT(:,2), total(:,1), total(:,2), 1e-3*Fs);
 
 fprintf('SNR = %d\n',ceil(mean(max(spikes'))/(median(abs(X))/0.6745)));
-
-% %% PLOTS
-% 
-% colour = ['r','b','g'];
-% 
-% figure
-% for b = 1:max(label)
-%     subplot(max(label),1,b);
-%     plot(1:window_size/2, spikes(label == b,:), colour(b)); hold on;
-%     title('Sorting of Extracted Spike Waveforms')
-%     xlabel('Samples')
-%     ylabel('Voltage(uV)')
-% end
-
 
 

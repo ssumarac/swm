@@ -2,26 +2,28 @@ function [tidx,val] = templatematching(spikes,template,type)
 
 for s = 1:size(spikes,1)
     
-    switch(type)
+    for j = 1:size(template,1)
         
-        case 1
-            for j = 1:size(template,1)
-                PsC_score(j) = PsC(template(j,:),spikes(s,:));
-            end
-            
-            [val(s),tidx(s)] = max(PsC_score);
-            
-        case 2
-            for i = 1:size(template,1)
-                [istart(i,1),istop(i,1),dist(i,1)] = findsignal(spikes(s,:),template(i,:));
-            end
-            
-            [val,tidx(s)] = min(dist);
-            
-            %figure
-            %findsignal(spikes(s,:),template(idx(s),:));
-            
+        m = length(template);
+        n = length(spikes);
+        
+        p4 = zeros(1,m);
+        normaliz = zeros(1,m);
+        PsC_score = zeros(1,n);
+        
+        for i = 1:m
+            p1 = (template(i)*spikes(i));
+            p2 = abs(template(i) - spikes(i));
+            p3 = max(abs(template(i)),abs(spikes(i)));
+            p4(i) = (p1 - p2*p3);
+            normaliz(i) = p3^2;
+        end
+        
+        PsC_score(j) = max(sum(p4)/sum(normaliz),0);    
     end
+    
+    [val(s),tidx(s)] = max(PsC_score);
+
 end
 
 end

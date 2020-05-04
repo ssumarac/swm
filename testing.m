@@ -32,22 +32,26 @@ isolated_label = kmeans(features,3);
 
 %% TEMPLATE MATCHING
 
-[overlapped_label, PsC_score] = CorrelationMatching2(overlapped_spikes,overlapped_template);
+[overlapped_label,PsC_score] = CorrelationMatching(overlapped_spikes,overlapped_template);
 
 %%  EVALUATE PERFORMANCE
 
-total = [isolated_index' isolated_label];
+isolated_output = [isolated_index' isolated_label];
+% overlapped_output = sortrows([[index_detected' label_detected']; [index_shifted' label_shifted']]);
+% output = sortrows([isolated_output; overlapped_output]);
 
-[precision, recall, accuracy] = EvaluatePerformance(GT(:,1), GT(:,2), total(:,1), total(:,2), 1e-3*Fs);
+[precision, recall, accuracy] = EvaluatePerformance(GT(:,1), GT(:,2), isolated_output(:,1), isolated_output(:,2), 1e-3*Fs);
 fprintf('SNR = %d\n',ceil(mean(max(spikes'))/(median(abs(X))/0.6745)));
 
-for i = 1:50
-figure
-subplot(2,1,1)
-plot(overlapped_spikes(i,:))
-subplot(2,1,2)
-plot(overlapped_template(overlapped_label(i),:))
-end
+%Ground_Truth = [GT(logical(GT(:,3)),1) GT(logical(GT(:,3)),2)];
+
+% for i = 1
+% figure
+% subplot(2,1,1)
+% plot(overlapped_spikes(i,:))
+% subplot(2,1,2)
+% plot(overlapped_template(overlapped_label(i),:))
+% end
 
 
 

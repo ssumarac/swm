@@ -41,7 +41,7 @@ total = [isolated_index' isolated_label];
 [precision, recall, accuracy] = EvaluatePerformance(GT(:,1), GT(:,2), total(:,1), total(:,2), 1e-3*Fs);
 fprintf('SNR = %d\n',ceil(mean(max(spikes'))/(median(abs(X))/0.6745)));
 
-for i = 1:50;
+for i = 1:50
 figure
 subplot(2,1,1)
 plot(overlapped_spikes(i,:))

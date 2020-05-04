@@ -1,4 +1,4 @@
-function [overlapped_template,overlapped_locations] = template(window_size,spikes,label,trigger)
+function [overlapped_template,template,overlapped_locations] = template(window_size,spikes,label,trigger)
 
 c = 1;
 

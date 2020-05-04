@@ -1,5 +1,5 @@
 clear all; close all; clc;
-%
+
 %% LOAD BENCHMARK DATA
 [X, Fs, GT] = GetData(1);
 

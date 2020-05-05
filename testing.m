@@ -8,7 +8,7 @@ window_size = 6e-3*Fs;
 threshold = 4*median(abs(X))/0.6745;
 cut = 0;
 isolated = 1;
-to_plot = 0;
+to_plot = 1;
 
 %% DETECT SPIKES
 [spikes, index, window_size, isolated_logical] = GetSpikes(X,window_size,threshold,cut,isolated);
@@ -31,6 +31,8 @@ isolated_label = kmeans(features,3);
 [overlapped_template,template,overlapped_locations] = GetTemplates(window_size,isolated_spikes,isolated_label,to_plot);
 
 %% TEMPLATE MATCHING
+
+error = 10;
 
 [overlapped_label,PsC_score] = CorrelationMatching(overlapped_spikes,overlapped_template);
 

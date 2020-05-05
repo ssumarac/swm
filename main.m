@@ -1,7 +1,7 @@
 clear all; close all; clc;
 
 %% LOAD DATA
-[X, Fs, GT] = GetData(1);
+[X, Fs, GT] = GetData(2);
 
 %% SET PARAMETERS
 initial_window_size = 6e-3*Fs;
@@ -37,23 +37,26 @@ label = kmeans(features,clusters);
 %% CORRELATION TEMPLATE MATCHING
 template_combined = [overlapped_template; template];
 
-[label_shifted_index, label_shifted, index_shifted, label_detected, PsC_score] = CorrelationTemplateMatching(overlapped_spikes,overlapped_template,label,window_size,overlapped_index,overlapped_locations,index,error_parameter);
+[shifted_output, label_detected, PsC_score] = CorrelationTemplateMatching(overlapped_spikes,overlapped_template,label,window_size,overlapped_index,overlapped_locations,index,error_parameter);
+
+%%  EVALUATE BENCHMARK PERFORMANCE
 
 index = index - delta_t;
+shifted_output(:,1) = shifted_output(:,1) - delta_t;
+
+
+label(not(isolated_logical)) = label_detected';
+detected_output = [index label];
+
+output = sortrows([shifted_output; detected_output]);
+
+fprintf('\nBENCHMARK\n');
+[precision, recall, accuracy] = EvaluatePerformance(GT(:,1), GT(:,2), output(:,1), output(:,2), delta_t);
+%[precision, recall, accuracy] = EvaluatePerformance(GT(logical(GT(:,3)),1), GT(logical(GT(:,3)),2), output(:,1), output(:,2), delta_t);
+
+fprintf('\nFor SNR = %d\n',ceil(mean(max(spikes'))/(median(abs(X))/0.6745)));
 
 %%  EVALUATE STANDARD PERFORMANCE
 fprintf('\nSTANDARD\n');
 [precision, recall, accuracy] = EvaluatePerformance(GT(:,1), GT(:,2), index, label, delta_t);
 %[precision, recall, accuracy] = EvaluatePerformance(GT(logical(GT(:,3)),1), GT(logical(GT(:,3)),2), index, label, delta_t);
-
-%%  EVALUATE BENCHMARK PERFORMANCE
-
-label(not(isolated_logical)) = label_detected';
-label(label_shifted_index) = label_shifted(label_shifted_index);
-
-fprintf('\nBENCHMARK\n');
-[precision, recall, accuracy] = EvaluatePerformance(GT(:,1), GT(:,2), index, output(:,2), delta_t);
-%[precision, recall, accuracy] = EvaluatePerformance(GT(logical(GT(:,3)),1), GT(logical(GT(:,3)),2), output(:,1), output(:,2), delta_t);
-
-fprintf('\nFor SNR = %d\n',ceil(mean(max(spikes'))/(median(abs(X))/0.6745)));
-

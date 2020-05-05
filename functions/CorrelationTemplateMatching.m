@@ -1,4 +1,4 @@
-function [label_shifted_index, label_shifted, index_shifted, label_detected, PsC_score] = CorrelationTemplateMatching(spikes,template,label,window_size,overlapped_index,overlapped_locations,index,error_parameter)
+function [shifted_output, label_detected, PsC_score] = CorrelationTemplateMatching(spikes,template,label,window_size,overlapped_index,overlapped_locations,index,error_parameter)
 
 for s = 1:size(spikes,1)
     for j = 1:size(template,1)
@@ -54,15 +54,25 @@ label_shifted = label_shifted(label_shifted>0)';
 
 h = 1;
 for i = 1:length(index_shifted)
-    temp = find(index > index_shifted(i) - error_parameter & index < index_shifted(i) + error_parameter); 
+    temp = find(index > index_shifted(i) - error_parameter & index < index_shifted(i) + error_parameter);
     
-    if (length(temp) == 1)
-       label_shifted_index(h) =  temp;
-       h = h + 1;
+    count(i) = length(temp);
+    
+    if count(i) == 0
+        to_add(h) = i;
+        h = h + 1;
     end
     
 end
 
 index_shifted = index_shifted - window_size/4;
+
+shifted_output = [index_shifted(to_add) label_shifted(to_add)];
+
+count = count';
+sum(count == 0);
+sum(count == 1);
+sum(count == 2);
+sum(count == 3);
 
 end

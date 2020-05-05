@@ -1,7 +1,7 @@
 clear all; close all; clc;
 
 %% LOAD BENCHMARK DATA
-[X, Fs, GT] = GetData(3);
+[X, Fs, GT] = GetData(1);
 
 %% SET PARAMETERS
 window_size = 2e-3*Fs;
@@ -20,9 +20,7 @@ isolated_index = index(isolated_logical);
 overlapped_spikes = spikes(not(isolated_logical),:);
 overlapped_index = index(not(isolated_logical));
 
-
-
-%% ISOLATED CLUSTERING
+%% CLUSTERING
 [coeff,score,latent] = pca(spikes);
 features = [score(:,1) score(:,2)];
 
@@ -92,9 +90,19 @@ index = index';
 %index_detected_shifted = [index_shifted; index_detected];
 
 
-%%  EVALUATE PERFORMANCE
+% for i = 1:50
+%     figure
+%     subplot(2,1,1)
+%     plot(overlapped_spikes(i,:))
+%     subplot(2,1,2)
+%     plot(template_combined(overlapped_label(i),:))
+% end
 
-error_parameter = 2;
+
+
+%%  EVALUATE BENCHMARK PERFORMANCE
+
+error_parameter = 20;
 
 h = 1;
 for i = 1:length(index_shifted)
@@ -117,6 +125,13 @@ sum(count == 1)
 sum(count == 2)
 sum(count == 3)
 
+%%  EVALUATE STANDARD PERFORMANCE
+
+fprintf('For SNR = %d\n\n',ceil(mean(max(spikes'))/(median(abs(X))/0.6745)));
+
+fprintf('\nSTANDARD\n');
+[precision, recall, accuracy] = EvaluatePerformance(GT(:,1), GT(:,2), index, label, 1e-3*Fs);
+
 label(not(isolated_logical)) = label_detected';
 detected_output = [index label];
 
@@ -124,18 +139,10 @@ shifted_output = [index_shifted(to_add) label_shifted(to_add)];
 
 output = sortrows([shifted_output; detected_output]);
 
+fprintf('\nBENCHMARK\n');
 [precision, recall, accuracy] = EvaluatePerformance(GT(:,1), GT(:,2), output(:,1), output(:,2), 1e-3*Fs);
-fprintf('SNR = %d\n',ceil(mean(max(spikes'))/(median(abs(X))/0.6745)));
 
 Ground_Truth = [GT(logical(GT(:,3)),1) GT(logical(GT(:,3)),2)];
-
-% for i = 1:50
-%     figure
-%     subplot(2,1,1)
-%     plot(overlapped_spikes(i,:))
-%     subplot(2,1,2)
-%     plot(template_combined(overlapped_label(i),:))
-% end
 
 
 

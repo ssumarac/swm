@@ -1,4 +1,4 @@
-function [overlapped_label,PsC_score] = CorrelationMatching(spikes,template)
+function [overlapped_label,PsC_score] = CorrelationTemplateMatching(spikes,template)
 
 for s = 1:size(spikes,1)
     for j = 1:size(template,1)

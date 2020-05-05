@@ -30,7 +30,7 @@ label = dbscan(spikes,epsilon,minPts);
 
 overlapped_spikes = spikes(label == -1,:);
 
-[label_shifted, label_detected, index_shifted, PsC_score] = CorrelationMatching(overlapped_spikes,overlapped_template,label,window_size,index);
+[label_shifted, label_detected, index_shifted, PsC_score] = CorrelationTemplateMatching(overlapped_spikes,overlapped_template,label,window_size,index);
 
 %% PRE-EVALUATION
 output_shifted = [index_shifted; label_shifted]';

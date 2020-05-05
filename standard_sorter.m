@@ -6,12 +6,18 @@ clear all; close all; clc;
 %% SET PARAMETERS
 window_size = 2e-3*Fs;
 threshold = 4*median(abs(X))/0.6745;
-cut = 1;
-method = 1;
-isolated = 0;
+cut = 0;
+method = 2;
+isolated = 1;
 
 %% DETECT SPIKES
-[spikes, index, window_size] = GetSpikes(X,window_size,threshold,cut,isolated);
+[spikes, index, window_size,isolated_logical] = GetSpikes(X,window_size,threshold,cut,isolated);
+
+isolated_spikes = spikes(isolated_logical,:);
+isolated_index = index(isolated_logical);
+
+overlapped_spikes = spikes(not(isolated_logical),:);
+overlapped_index = index(not(isolated_logical));
 
 %% CLUSTERING
 [coeff,score,latent] = pca(spikes);

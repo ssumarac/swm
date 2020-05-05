@@ -1,7 +1,7 @@
 clear all; close all; clc;
 
 %% LOAD BENCHMARK DATA
-[X, Fs, GT] = GetData(1);
+[X, Fs, GT] = GetData(3);
 
 %% SET PARAMETERS
 window_size = 2e-3*Fs;
@@ -20,6 +20,8 @@ isolated_index = index(isolated_logical);
 overlapped_spikes = spikes(not(isolated_logical),:);
 overlapped_index = index(not(isolated_logical));
 
+
+
 %% ISOLATED CLUSTERING
 [coeff,score,latent] = pca(spikes);
 features = [score(:,1) score(:,2)];
@@ -37,8 +39,8 @@ template_combined = [overlapped_template; template];
 
 [overlapped_label,PsC_score] = CorrelationMatching(overlapped_spikes,template_combined);
 
-figure;
-histogram(PsC_score)
+% figure;
+% histogram(PsC_score)
 
 P = perms(1:max(label));
 P = [P(:,end-1:end); [1:max(label); 1:max(label)]'];
@@ -80,18 +82,34 @@ for j = 1:length(overlapped_index)
     end
 end
 
+index_detected = overlapped_index';
+
 index_shifted = index_shifted(index_shifted>0)';
-label_shifted = label_shifted(index_shifted>0)';
+
+label_shifted = label_shifted(label_shifted>0)';
 index = index';
+
+%index_detected_shifted = [index_shifted; index_detected];
+
 
 %%  EVALUATE PERFORMANCE
 
+error_parameter = 2;
+
+h = 1;
 for i = 1:length(index_shifted)
-    temporary = find(index > index_shifted(i) - 15 & index < index_shifted(i) + 15);
+    temp = find(index > index_shifted(i) - error_parameter & index < index_shifted(i) + error_parameter);
     
-    count(i) = length(temporary);
+    count(i) = length(temp);
+   
+    if count(i) == 0
+       to_add(h) = i;
+       h = h + 1;
+    end
     
 end
+
+index_shifted = index_shifted - window_size/2;
 
 count = count';
 sum(count == 0)
@@ -102,14 +120,14 @@ sum(count == 3)
 label(not(isolated_logical)) = label_detected';
 detected_output = [index label];
 
-shifted_output = [index_shifted(index_shifted>0)' label_shifted(index_shifted>0)'];
+shifted_output = [index_shifted(to_add) label_shifted(to_add)];
 
 output = sortrows([shifted_output; detected_output]);
 
-[precision, recall, accuracy] = EvaluatePerformance(GT(:,1), GT(:,2), shifted_output(:,1), shifted_output(:,2), 1e-3*Fs);
+[precision, recall, accuracy] = EvaluatePerformance(GT(:,1), GT(:,2), output(:,1), output(:,2), 1e-3*Fs);
 fprintf('SNR = %d\n',ceil(mean(max(spikes'))/(median(abs(X))/0.6745)));
 
-%Ground_Truth = [GT(logical(GT(:,3)),1) GT(logical(GT(:,3)),2)];
+Ground_Truth = [GT(logical(GT(:,3)),1) GT(logical(GT(:,3)),2)];
 
 % for i = 1:50
 %     figure

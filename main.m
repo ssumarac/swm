@@ -4,18 +4,18 @@ clear all; close all; clc;
 [X, Fs, GT] = GetData(1);
 
 %% SET PARAMETERS
-window_size = 2e-3*Fs;
+initial_window_size = 6e-3*Fs;
 threshold = 4*median(abs(X))/0.6745;
 clusters = 3;
-error_parameter = 24;
+error_parameter = 2;
 delta_t = 1e-3*Fs;
 
-cut = 0;
+cut = 1;
 isolated = 1;
 to_plot = 0;
 
 %% DETECT SPIKES
-[spikes, index, window_size,isolated_logical] = GetSpikes(X,window_size,threshold,cut,isolated);
+[spikes, index, window_size,isolated_logical] = GetSpikes(X,initial_window_size,threshold,cut,isolated);
 index = index';
 
 isolated_spikes = spikes(isolated_logical,:);
@@ -37,108 +37,26 @@ label = kmeans(features,clusters);
 %% CORRELATION TEMPLATE MATCHING
 template_combined = [overlapped_template; template];
 
-[overlapped_label,PsC_score] = CorrelationTemplateMatching(overlapped_spikes,template_combined);
-
-if to_plot == 1
-    for i = 1:50
-        figure
-        subplot(2,1,1)
-        plot(overlapped_spikes(i,:))
-        subplot(2,1,2)
-        plot(template_combined(overlapped_label(i),:))
-    end
-end
-
-if to_plot == 1
-    figure;
-    histogram(PsC_score)
-end
-
-P = perms(1:max(label));
-P = [P(:,end-1:end); [1:max(label); 1:max(label)]'];
-P = sortrows(P);
-P = unique(P,'rows');
-
-for d = 0:(max(label))^2 - 1
-    for e = 1:length(overlapped_label)
-        if (overlapped_label(e) >= 1 + d*window_size) & (overlapped_label(e) <= (d+1)*window_size)
-            label_shifted(e) = P(d+1,2)';
-            label_detected(e) = P(d+1,1)';
-        end
-        
-        if overlapped_label(e) == (d+1)*window_size + 1
-            label_detected(e) = 1;
-        end
-        
-        if overlapped_label(e) == (d+1)*window_size + 2
-            label_detected(e) = 2;
-        end
-        
-        if overlapped_label(e) == (d+1)*window_size + 3
-            label_detected(e) = 3;
-        end
-        
-    end
-end
-
-for j = 1:length(overlapped_index)
-    
-    if overlapped_label(j) <= length(overlapped_locations)
-        
-        if overlapped_locations(overlapped_label(j)) > window_size/2
-            index_shifted(j) = overlapped_index(j) + overlapped_locations(overlapped_label(j)) - window_size/2;
-        else
-            index_shifted(j) = overlapped_index(j) + overlapped_locations(overlapped_label(j));
-        end
-    end
-end
-
-index_detected = overlapped_index';
-index_shifted = index_shifted(index_shifted>0)';
-label_shifted = label_shifted(label_shifted>0)';
-
-
-%index_detected_shifted = [index_shifted; index_detected];
-
-
+[shifted_output, label_detected, PsC_score] = CorrelationTemplateMatching(overlapped_spikes,overlapped_template,label,window_size,overlapped_index,overlapped_locations,index,error_parameter);
 
 %%  EVALUATE BENCHMARK PERFORMANCE
 
-h = 1;
-for i = 1:length(index_shifted)
-    temp = find(index > index_shifted(i) - error_parameter & index < index_shifted(i) + error_parameter);
-    
-    count(i) = length(temp);
-    
-    if count(i) == 0
-        to_add(h) = i;
-        h = h + 1;
-    end
-    
-end
+index = index - delta_t;
+shifted_output(:,1) = shifted_output(:,1) - delta_t;
 
-index_shifted = index_shifted - window_size/2;
 
-count = count';
-sum(count == 0)
-sum(count == 1)
-sum(count == 2)
-sum(count == 3)
-
-%%  EVALUATE STANDARD PERFORMANCE
-
-fprintf('\nSTANDARD\n');
-[precision, recall, accuracy] = EvaluatePerformance(GT(:,1), GT(:,2), index, label, delta_t);
-
-label(not(isolated_logical)) = label_detected';
+%label(not(isolated_logical)) = label_detected';
 detected_output = [index label];
-
-shifted_output = [index_shifted(to_add) label_shifted(to_add)];
 
 output = sortrows([shifted_output; detected_output]);
 
 fprintf('\nBENCHMARK\n');
 [precision, recall, accuracy] = EvaluatePerformance(GT(:,1), GT(:,2), output(:,1), output(:,2), delta_t);
+%[precision, recall, accuracy] = EvaluatePerformance(GT(logical(GT(:,3)),1), GT(logical(GT(:,3)),2), output(:,1), output(:,2), delta_t);
 
 fprintf('\nFor SNR = %d\n',ceil(mean(max(spikes'))/(median(abs(X))/0.6745)));
 
+%%  EVALUATE STANDARD PERFORMANCE
+fprintf('\nSTANDARD\n');
+[precision, recall, accuracy] = EvaluatePerformance(GT(:,1), GT(:,2), index, label, delta_t);
+%[precision, recall, accuracy] = EvaluatePerformance(GT(logical(GT(:,3)),1), GT(logical(GT(:,3)),2), index, label, delta_t);

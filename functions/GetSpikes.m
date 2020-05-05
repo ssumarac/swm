@@ -1,4 +1,4 @@
-function [spikes index window_size isolated_logical] = GetSpikes(X,window_size,threshold,cut, isolated)
+function [spikes, index, window_size, isolated_logical] = GetSpikes(X,window_size,threshold,cut, isolated)
 
 [peaks, index] = findpeaks(X,'MinPeakHeight',threshold);
 

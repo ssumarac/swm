@@ -23,7 +23,7 @@ spike_times = cell2mat(spike_times);
 spike_class_1 = cell2mat(spike_class(1))';
 spike_class_2 = cell2mat(spike_class(2))';
 spike_class_3 = cell2mat(spike_class(3))';
-spike_times = spike_times + 22;
+%spike_times = spike_times + 22;
 
 Fs = 1/samplingInterval*1e3;
 X = data;

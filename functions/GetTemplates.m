@@ -1,4 +1,4 @@
-function [overlapped_template,template,overlapped_locations] = template(window_size,spikes,label,trigger)
+function [overlapped_template,template,undetected_overlaps, overlapped_locations] = template(window_size,spikes,label,threshold,trigger)
 
 c = 1;
 
@@ -29,5 +29,20 @@ for a = 1:max(label)
         end
     end
 end
+
+j = 1;
+for i = 1:length(overlapped_template)
+    
+    temp4 = numel(findpeaks(overlapped_template(i,:),'MinPeakHeight',threshold));
+    temp5 = numel(findpeaks(-overlapped_template(i,:),'MinPeakHeight',threshold));
+    
+    if (temp4 == 1) && (temp5 == 1)
+        undetected_overlaps(j) =  i;
+        j = j + 1;
+    end
+    
+end
+
+overlapped_locations = reshape(overlapped_locations,72,9)';
 
 end

@@ -35,6 +35,7 @@ for i = 1:length(overlapped_template)
     
     temp4 = numel(findpeaks(overlapped_template(i,:),'MinPeakHeight',threshold));
     temp5 = numel(findpeaks(-overlapped_template(i,:),'MinPeakHeight',threshold));
+    warning off
     
     if (temp4 == 1) && (temp5 == 1)
         undetected_overlaps(j) =  i;

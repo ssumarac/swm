@@ -1,4 +1,4 @@
-function [label_detected, overlapped_label, PsC_score] = CorrelationTemplateMatching(spikes,template,kmeans_label,window_size,undetected_overlaps)
+function [label_detected, overlapped_label, PsC_score] = CorrelationTemplateMatching(spikes,template,kmeans_label,window_size,undetected_overlaps,overlapped_locations)
 
 for s = 1:size(spikes,1)
     for j = 1:size(template,1)
@@ -12,14 +12,20 @@ P = [P(:,end-1:end); [1:max(kmeans_label); 1:max(kmeans_label)]'];
 P = sortrows(P);
 P = unique(P,'rows');
 
+b = 1;
 for d = 0:(max(kmeans_label))^2 - 1
     for e = 1:length(overlapped_label)
         if (overlapped_label(e) >= 1 + d*window_size) & (overlapped_label(e) <= (d+1)*window_size)
                
             if ismember(overlapped_label(e),undetected_overlaps)
-                label_shifted(e) = P(d+1,2)';
+                label_shifted(b) = P(d+1,2)';
+                
+                temp(b) = overlapped_label(e) - d*window_size;
+                
+                b=b+1;
+                
             end    
-            
+           
             label_detected(e) = P(d+1,1)';
         end
         
@@ -37,5 +43,7 @@ for d = 0:(max(kmeans_label))^2 - 1
         
     end
 end
+
+%label_shifted = label_shifted(label_shifted > 0);
 
 end

@@ -28,7 +28,7 @@ kmeans_label = kmeans(features,clusters);
 %% CORRELATION TEMPLATE MATCHING
 template_combined = [overlapped_template; template];
 
-[label_detected,template_label, PsC_score] = CorrelationTemplateMatching(spikes,template_combined,kmeans_label,window_size,undetected_overlaps);
+[label_detected,template_label, PsC_score] = CorrelationTemplateMatching(spikes,template_combined,kmeans_label,window_size,undetected_overlaps,overlapped_locations);
 
 %%  EVALUATE BENCHMARK PERFORMANCE
 

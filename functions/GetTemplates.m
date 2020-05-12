@@ -1,4 +1,4 @@
-function [overlapped_template,template,undetected_overlaps, overlapped_locations] = template(window_size,spikes,label,threshold,trigger)
+function [overlapped_template,template,undetected_overlaps] = template(window_size,spikes,label,threshold,trigger)
 
 c = 1;
 
@@ -23,8 +23,6 @@ for a = 1:max(label)
                 drawnow;
             end
             
-            overlapped_locations(c) = i;
-            
             c = c + 1;
         end
     end
@@ -44,6 +42,8 @@ for i = 1:length(overlapped_template)
     
 end
 
-overlapped_locations = reshape(overlapped_locations,72,9)';
+if j == 1
+    undetected_overlaps = 0;
+end
 
 end

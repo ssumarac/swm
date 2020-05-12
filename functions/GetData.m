@@ -15,7 +15,8 @@ filename = ["C_Easy1_noise005"
     "C_Difficult2_noise005"
     "C_Difficult2_noise01"
     "C_Difficult2_noise015"
-    "C_Difficult2_noise02"];
+    "C_Difficult2_noise02"
+    "C_Burst_Easy2_noise015"];
 
 load(filename(N));
 

@@ -8,7 +8,7 @@ end
 
 for a = 1:max(label)
     for b = 1:max(label)
-        template(b,:) = mean(spikes(label == b,:));
+        template(b,:) = median(spikes(label == b,:));
         temp1(b,:) = [zeros(1,window_size/2) template(b,:) zeros(1,window_size/2)];
         
         for i = 1:window_size

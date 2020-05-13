@@ -22,23 +22,26 @@ features = [score(:,1) score(:,2)];
 rng('default')
 kmeans_label = kmeans(features,clusters);
 
+figure; 
+gscatter(score(:,1),score(:,2),kmeans_label)
+
 %% BUILD OVERLAPPING TEMPLATES
-[overlapped_template,template,undetected_overlaps] = GetTemplates(window_size,spikes,kmeans_label,threshold,to_plot);
+[overlapped_template,template] = GetTemplates(window_size,spikes,kmeans_label,to_plot);
 
 %% CORRELATION TEMPLATE MATCHING
 template_combined = [overlapped_template; template];
 
-[label_detected,template_label, PsC_score,index_shifted,label_shifted,overlapped_index,overlapped_logical] = CorrelationTemplateMatching(spikes,template_combined,kmeans_label,window_size,undetected_overlaps,index);
+[label_detected, PsC_score,overlapped_logical] = CorrelationTemplateMatching(spikes,template_combined,kmeans_label,window_size);
 
 %%  EVALUATE BENCHMARK PERFORMANCE
 
 GT(:,1) = GT(:,1) + 22;
 
-temp = [index; index_shifted'];
-temp2 = [label_detected'; label_shifted'];
-temp3 = [overlapped_logical'; ones(length(index_shifted),1)];
+isolated_logical = not(overlapped_logical);
 
-output_benchmark = sortrows([temp temp2 temp3]);
+label_detected(isolated_logical) = kmeans_label(isolated_logical);
+
+output_benchmark = [index label_detected' overlapped_logical'];
 
 fprintf('\nBENCHMARK\n');
 %[precision, recall, accuracy] = EvaluatePerformance(GT(:,1), GT(:,2), output_benchmark(:,1), output_benchmark(:,2), delta_t);
@@ -53,4 +56,5 @@ fprintf('\nSTANDARD\n');
 [precision, recall, accuracy] = EvaluatePerformance(GT(logical(GT(:,3)),1), GT(logical(GT(:,3)),2), output_standard(logical(output_standard(:,3)),1), output_standard(logical(output_standard(:,3)),2), delta_t);
 
 fprintf('\nFor SNR = %d\n',ceil(mean(max(spikes'))/(median(abs(X))/0.6745)));
+
 

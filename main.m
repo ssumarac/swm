@@ -1,10 +1,12 @@
 clear all; close all; clc;
 
+for h = 1
+
 %% LOAD DATA
-[X, Fs, GT] = GetData(1);
+[X, Fs, GT] = GetData(h);
 
 %% SET PARAMETERS
-window_size = 3e-3*Fs;
+window_size = 2e-3*Fs;
 threshold = 4*median(abs(X))/0.6745;
 clusters = 3;
 delta_t = 1e-3*Fs;
@@ -14,27 +16,12 @@ clustering_method = 3;
 
 %% DETECT SPIKES
 [spikes, index] = GetSpikes(X,window_size,threshold);
-index = index';
 
 %% DO CLUSTERING
-[coeff,score,latent] = pca(spikes);
-features = [score(:,1) score(:,2)];
-
-if clustering_method == 1
-    rng('default')
-    label = kmeans(features,clusters);
-elseif clustering_method == 2
-    [C U] = fcm(spikes,clusters);
-    [val label] = max(U);
-    label = label';
-elseif clustering_method == 3
-    minPts = size(spikes,2) - 1;
-    epsilon = clusterDBSCAN.estimateEpsilon(spikes,2,minPts);
-    label = dbscan(spikes,epsilon,minPts);
-end
+[label features] = DoClustering(spikes,clustering_method);
 
 figure;
-gscatter(score(:,1),score(:,2),label)
+gscatter(features(:,1),features(:,2),label)
 
 %% BUILD OVERLAPPING TEMPLATES
 [overlapped_template,template] = GetTemplates(window_size,spikes,label,to_plot);
@@ -68,4 +55,4 @@ fprintf('\nSTANDARD\n');
 
 fprintf('\nFor SNR = %d\n',ceil(mean(max(spikes'))/(median(abs(X))/0.6745)));
 
-
+end

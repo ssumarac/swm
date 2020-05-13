@@ -7,4 +7,6 @@ for i = 1:length(index)
     spikes(i,:) = X(spike_window(i,:));
 end
 
+index = index';
+
 end

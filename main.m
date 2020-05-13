@@ -1,12 +1,10 @@
 clear all; close all; clc;
 
-for h = 1
-
 %% LOAD DATA
-[X, Fs, GT] = GetData(h);
+[X, Fs, GT] = GetData(1);
 
 %% SET PARAMETERS
-window_size = 2e-3*Fs;
+window_size = 1.5e-3*Fs;
 threshold = 4*median(abs(X))/0.6745;
 clusters = 3;
 delta_t = 1e-3*Fs;
@@ -27,15 +25,13 @@ gscatter(features(:,1),features(:,2),label)
 templates = GetTemplates(window_size,spikes,label,to_plot);
 
 %% CORRELATION TEMPLATE MATCHING
-[label_detected, PsC_score,overlapped_logical] = CorrelationTemplateMatching(spikes,templates,label,window_size);
+[label_template, PsC_score,overlapped_logical] = CorrelationTemplateMatching(spikes,templates,label,window_size);
 
 %%  EVALUATE BENCHMARK PERFORMANCE
 
-isolated_logical = not(overlapped_logical);
+%label_template(isolated_logical) = label(isolated_logical);
 
-label_detected(isolated_logical) = label(isolated_logical);
-
-output_benchmark = [index label_detected' overlapped_logical'];
+output_benchmark = [index label_template overlapped_logical];
 
 fprintf('\nBENCHMARK\n');
 [precision, recall, accuracy] = EvaluatePerformance(GT(:,1), GT(:,2), output_benchmark(:,1), output_benchmark(:,2), delta_t);
@@ -43,7 +39,7 @@ fprintf('\nBENCHMARK\n');
 
 %%  EVALUATE STANDARD PERFORMANCE
 
-output_standard = [index label overlapped_logical'];
+output_standard = [index label overlapped_logical];
 
 fprintf('\nSTANDARD\n');
 [precision, recall, accuracy] = EvaluatePerformance(GT(:,1), GT(:,2), output_standard(:,1), output_standard(:,2), delta_t);
@@ -51,4 +47,29 @@ fprintf('\nSTANDARD\n');
 
 fprintf('\nFor SNR = %d\n',ceil(mean(max(spikes'))/(median(abs(X))/0.6745)));
 
-end
+%% PLOTS
+
+close all
+
+t = (1:length(X))/Fs;
+
+figure; 
+plot(t,X); hold on;
+plot(t(index),X(index),'r*'); hold on;
+plot(t,threshold*ones(1,length(X)),'r','LineWidth',2);
+
+spikes_isolated = spikes(not(overlapped_logical),:);
+label_isolated = label_template(not(overlapped_logical));
+
+spikes_overlapped = spikes(overlapped_logical,:); 
+label_overlapped = label_template(overlapped_logical);
+
+figure;
+plot(1:window_size,spikes_isolated(label_isolated == 1,:),'r'); hold on;
+plot(1:window_size,spikes_isolated(label_isolated == 2,:),'g'); hold on;
+plot(1:window_size,spikes_isolated(label_isolated == 3,:),'b'); hold on;
+
+figure;
+plot(1:window_size,spikes_overlapped(label_overlapped == 1,:),'r'); hold on;
+plot(1:window_size,spikes_overlapped(label_overlapped == 2,:),'g'); hold on;
+plot(1:window_size,spikes_overlapped(label_overlapped == 3,:),'b'); hold on;

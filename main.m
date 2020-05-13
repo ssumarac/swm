@@ -12,28 +12,24 @@ clusters = 3;
 delta_t = 1e-3*Fs;
 
 to_plot = 0;
-clustering_method = 3;
+clustering_method = 2;
 
 %% DETECT SPIKES
 [spikes, index] = GetSpikes(X,window_size,threshold);
 
 %% DO CLUSTERING
-[label features] = DoClustering(spikes,clustering_method);
+[label, features] = DoClustering(spikes,clustering_method,clusters);
 
 figure;
 gscatter(features(:,1),features(:,2),label)
 
 %% BUILD OVERLAPPING TEMPLATES
-[overlapped_template,template] = GetTemplates(window_size,spikes,label,to_plot);
+templates = GetTemplates(window_size,spikes,label,to_plot);
 
 %% CORRELATION TEMPLATE MATCHING
-template_combined = [overlapped_template; template];
-
-[label_detected, PsC_score,overlapped_logical] = CorrelationTemplateMatching(spikes,template_combined,label,window_size);
+[label_detected, PsC_score,overlapped_logical] = CorrelationTemplateMatching(spikes,templates,label,window_size);
 
 %%  EVALUATE BENCHMARK PERFORMANCE
-
-GT(:,1) = GT(:,1) + 22;
 
 isolated_logical = not(overlapped_logical);
 

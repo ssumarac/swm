@@ -31,4 +31,6 @@ X = data;
 
 GT = [spike_times' spike_class_1 spike_class_2];
 
+GT(:,1) = GT(:,1) + 22;
+
 end

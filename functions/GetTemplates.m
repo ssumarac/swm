@@ -1,4 +1,4 @@
-function [overlapped_template,template] = template(window_size,spikes,label,trigger)
+function templates = template(window_size,spikes,label,trigger)
 
 c = 1;
 
@@ -27,5 +27,7 @@ for a = 1:max(label)
         end
     end
 end
+
+templates = [overlapped_template; template];
 
 end

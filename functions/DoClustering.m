@@ -3,7 +3,7 @@ function [label features] = DoClustering(spikes,clustering_method,clusters)
 [coeff,score,latent] = pca(spikes);
 features = [score(:,1) score(:,2)];
 
-rng('default')
+rng(26931257)
 
 if clustering_method == 1
     label = kmeans(features,clusters);

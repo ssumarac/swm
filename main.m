@@ -27,7 +27,7 @@ templates = GetTemplates(window_size,spikes,label,to_record);
 
 %%  EVALUATE BENCHMARK PERFORMANCE
 
-%label_template(isolated_logical) = label(isolated_logical);
+label_template(not(overlapped_logical)) = label(not(overlapped_logical));
 
 output_benchmark = [index label_template overlapped_logical];
 
@@ -102,7 +102,7 @@ if to_plot == 1
     
     figure
     subplot(2,2,1);
-    plot(w,spikes(2892,:),'r','linewidth',2)
+    plot(w,spikes(2892,:),'k','linewidth',2)
     title('Detected Spike #2892')
     xlabel('Time (ms)')
     ylabel('Voltage (uV)')
@@ -116,7 +116,7 @@ if to_plot == 1
     axis([1/Fs window_size/Fs -1.5 1.5]);
     
     subplot(2,2,2);
-    plot(w,spikes(2466,:),'g','linewidth',2)
+    plot(w,spikes(2466,:),'k','linewidth',2)
     title('Detected Spike #2466')
     xlabel('Time (ms)')
     ylabel('Voltage (uV)')
@@ -128,6 +128,24 @@ if to_plot == 1
     xlabel('Time (ms)')
     ylabel('Voltage (uV)')
     axis([1/Fs window_size/Fs -1.5 1.5]);
+    
+    % test
+    figure
+    plot(w,spikes(2466,:),'k','linewidth',2)
+    title('Detected Spike #2466')
+    xlabel('Time (ms)')
+    ylabel('Voltage (uV)')
+    axis([1/Fs window_size/Fs -1.5 1.5]);
+    
+    rng('default')
+    random_templates = randi(length(templates),5,5);
+    
+    figure
+    for i = 1:25
+            subplot(5,5,i);
+            plot(w,templates(random_templates(i),:),'r','linewidth',2)
+            axis([1/Fs window_size/Fs -2 2]);
+    end
     
     
     %%

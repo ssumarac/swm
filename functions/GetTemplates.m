@@ -1,4 +1,4 @@
-function templates = template(window_size,spikes,label,trigger)
+function [templates, window_size, spikes] = template(window_size_init,spikes_init,label,trigger)
 
 c = 1;
 
@@ -8,18 +8,18 @@ end
 
 for a = 1:max(label)
     for b = 1:max(label)
-        template(b,:) = median(spikes(label == b,:));
-        temp1(b,:) = [zeros(1,window_size/2) template(b,:) zeros(1,window_size/2)];
+        template(b,:) = median(spikes_init(label == b,:));
+        temp1(b,:) = [zeros(1,window_size_init/2) template(b,:) zeros(1,window_size_init/2)];
         
-        for i = 1:window_size
+        for i = 1+window_size_init/4:window_size_init-window_size_init/4
             
-            temp2 = [zeros(1,i) template(b,:) zeros(1,window_size-i)];
+            temp2 = [zeros(1,i) template(b,:) zeros(1,window_size_init-i)];
             temp3 = temp1(a,:) + temp2;
-            overlapped_template(c,:) = temp3(:,window_size/2 + 1:length(temp1) - window_size/2);
+            overlapped_template(c,:) = temp3(:,window_size_init/2 + 1:length(temp1) - window_size_init/2);
             
             if trigger == 1
-                plot((1:window_size)*1000/24000,overlapped_template(c,:),'r*-');
-                axis([1*1000/24000 window_size*1000/24000 -2 2])
+                plot((1:window_size_init)*1000/24000,overlapped_template(c,:),'r*-');
+                axis([1*1000/24000 window_size_init*1000/24000 -2 2])
                 title('Construction of Overlapped Spike Templates')
                 xlabel('Time (ms)')
                 ylabel('Voltage (uV)')
@@ -41,5 +41,10 @@ if trigger == 1
 end
 
 templates = [overlapped_template; template];
+
+templates = templates(:,1+window_size_init/4:window_size_init - window_size_init/4);
+window_size = window_size_init/2;
+spikes = spikes_init(:,1+window_size_init/4:window_size_init - window_size_init/4);
+
 
 end

@@ -1,7 +1,7 @@
 clear all; close all; clc;
 
 %% LOAD DATA
-[X, Fs, GT] = GetData(13);
+[X, Fs, GT] = GetData(15);
 
 %% SET PARAMETERS
 window_size_init = 3e-3*Fs;
@@ -11,7 +11,7 @@ delta_t = 1e-3*Fs;
 
 to_plot = 0;
 to_record = 0;
-clustering_method = 2;
+clustering_method = 1;
 
 %% DETECT SPIKES
 [spikes_init, index] = GetSpikes(X,window_size_init,threshold);
@@ -23,11 +23,9 @@ clustering_method = 2;
 [templates, window_size, spikes] = GetTemplates(window_size_init,spikes_init,label,to_record);
 
 %% CORRELATION TEMPLATE MATCHING
-[label_template, PsC_score,overlapped_label, overlapped_logical] = CorrelationTemplateMatching(spikes,templates,label,window_size);
+[label_template, PsC_score,overlapped_label, overlapped_logical] = TemplateMatching(spikes,templates,label,window_size);
 
 %%  EVALUATE BENCHMARK PERFORMANCE
-
-label_template(not(overlapped_logical)) = label(not(overlapped_logical));
 
 output_benchmark = [index label_template overlapped_logical];
 
@@ -144,9 +142,9 @@ if to_plot == 1
     
     figure
     for i = 1:25
-            subplot(5,5,i);
-            plot(w,templates(random_templates(i),:),'r','linewidth',2)
-            axis([1/Fs window_size/Fs -2 2]);
+        subplot(5,5,i);
+        plot(w,templates(random_templates(i),:),'r','linewidth',2)
+        axis([1/Fs window_size/Fs -2 2]);
     end
     
     

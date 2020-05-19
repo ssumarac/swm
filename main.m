@@ -1,6 +1,6 @@
 clear all; close all; clc;
 
-for h = 1:16
+for h = 1
     %% LOAD DATA
     [X, Fs, GT] = GetData(h);
     
@@ -10,25 +10,25 @@ for h = 1:16
     clusters = 3;
     delta_t = 1e-3*Fs;
     
-    to_plot = 0;
+    to_plot = 1;
     to_record = 0;
-    clustering_method = 2;
+    clustering_method = 1;
     
     %% DETECT SPIKES
-    [spikes_init, index] = GetSpikes(X,window_size_init,threshold);
+    [spikes_init, spikes, index] = GetSpikes(X,window_size_init,threshold);
     
     %% DO CLUSTERING
-    [label, features] = DoClustering(spikes_init,clustering_method,clusters);
+    [label, features] = DoClustering(spikes,clustering_method,clusters);
     
     %% BUILD OVERLAPPING TEMPLATES
     [templates, window_size, spikes] = GetTemplates(window_size_init,spikes_init,label,to_record);
     
     %% CORRELATION TEMPLATE MATCHING
-    [label_template, min_distance,overlapped_label, overlapped_logical] = TemplateMatching(spikes,templates,label,window_size);
+    [label_template, min_distance,overlapped_label] = TemplateMatching(spikes,templates,label,window_size);
     
     %%  EVALUATE BENCHMARK PERFORMANCE
     
-    output_benchmark = [index label_template overlapped_logical];
+    output_benchmark = [index label_template];
     
     fprintf('\nBENCHMARK\n');
     [precision_benchmark(h), recall_benchmark(h), accuracy_benchmark(h)] = EvaluatePerformance(GT(:,1), GT(:,2), output_benchmark(:,1), output_benchmark(:,2), delta_t);
@@ -36,10 +36,7 @@ for h = 1:16
     
     %%  EVALUATE STANDARD PERFORMANCE
     
-    spikes_standard = GetSpikes(X,window_size,threshold);
-    label_standard = DoClustering(spikes_init,clustering_method,clusters);
-    
-    output_standard = [index label_standard];
+    output_standard = [index label];
     
     fprintf('\nSTANDARD\n');
     [precision_standard(h), recall_standard(h), accuracy_standard(h)] = EvaluatePerformance(GT(:,1), GT(:,2), output_standard(:,1), output_standard(:,2), delta_t);
@@ -51,12 +48,13 @@ for h = 1:16
     %% PLOTS
     
     if to_plot == 1
+        
         %% Spike Detection
         t = (1:length(X))/Fs;
         w = (1:window_size)/Fs;
         
         figure;
-        plot(t,X); hold on;
+        plot(t,X,'k'); hold on;
         plot(t(index),X(index),'r*'); hold on;
         plot(t,threshold*ones(1,length(X)),'r','LineWidth',2);
         title('Filtered Signal from Single Electrode Channel')
@@ -69,112 +67,56 @@ for h = 1:16
         xlabel('Time (s)')
         ylabel('Voltage (uV)')
         
+        
         %% Initial Spike Classification
         figure;
         gscatter(features(:,1),features(:,2),label)
-        title('Feature Space')
+        title(sprintf('Feature Space %i',h))
         xlabel('First Principle Component')
         ylabel('Second Principle Component')
         
+        
         %% Build Templates
         figure;
-        subplot(1,3,1)
-        plot(w,spikes(label == 1,:),'r'); hold on;
-        plot(w,median(spikes(label == 1,:)),'k','linewidth',2);
-        title('Spike Class 1')
+        plot(w,median(spikes(label == 1,:)),'r'); hold on;
+        plot(w,median(spikes(label == 2,:)),'g'); hold on;
+        plot(w,median(spikes(label == 3,:)),'b');
+        title('Initial Templates')
         xlabel('Time (s)')
         ylabel('Voltage (uV)')
-        
-        subplot(1,3,2)
-        plot(w,spikes(label == 2,:),'g'); hold on;
-        plot(w,median(spikes(label == 2,:)),'k','linewidth',2);
-        title('Spike Class 1')
-        xlabel('Time (s)')
-        ylabel('Voltage (uV)')
-        
-        subplot(1,3,3)
-        plot(w,spikes(label == 3,:),'b'); hold on;
-        plot(w,median(spikes(label == 3,:)),'k','linewidth',2);
-        title('Spike Class 1')
-        xlabel('Time (s)')
-        ylabel('Voltage (uV)')
+        legend('Spike Template #1','Spike Template #2','Spike Template #3')
         
         %% Template Matching
-        figure;
-        histogram(min_distance)
-        
         figure
-        subplot(2,2,1);
-        plot(w,spikes(2892,:),'k','linewidth',2)
-        title('Detected Spike #2892')
+        subplot(1,3,1)
+        plot(w,spikes(1024,:),'b'); hold on;
+        plot(w,templates(overlapped_label(1024),:),'k');
+        title('Spike #1024')
         xlabel('Time (ms)')
         ylabel('Voltage (uV)')
         axis([1/Fs window_size/Fs -1.5 1.5]);
+        legend('Detected Spike','Best Match Template')
         
-        subplot(2,2,3);
-        plot(w,templates(overlapped_label(2892),:),'r','linewidth',2)
-        title('Matched Template #101 Corresponding To Spike Class 1','linewidth',2)
+        subplot(1,3,2)
+        plot(w,spikes(2466,:),'g'); hold on;
+        plot(w,templates(overlapped_label(2466),:),'k');
+        title('Spike #2466')
         xlabel('Time (ms)')
         ylabel('Voltage (uV)')
         axis([1/Fs window_size/Fs -1.5 1.5]);
+        legend('Detected Spike','Best Match Template')
         
-        subplot(2,2,2);
-        plot(w,spikes(2466,:),'k','linewidth',2)
-        title('Detected Spike #2466')
+        subplot(1,3,3)
+        plot(w,spikes(1585,:),'r'); hold on;
+        plot(w,templates(overlapped_label(1585),:),'k');
+        title('Spike #1585')
         xlabel('Time (ms)')
         ylabel('Voltage (uV)')
         axis([1/Fs window_size/Fs -1.5 1.5]);
-        
-        subplot(2,2,4);
-        plot(w,templates(overlapped_label(2466),:),'g','linewidth',2)
-        title('Matched Template #98 Corresponding To Spike Class 1','linewidth',2)
-        xlabel('Time (ms)')
-        ylabel('Voltage (uV)')
-        axis([1/Fs window_size/Fs -1.5 1.5]);
-        
-        % test
-        figure
-        plot(w,spikes(2466,:),'k','linewidth',2)
-        title('Detected Spike #2466')
-        xlabel('Time (ms)')
-        ylabel('Voltage (uV)')
-        axis([1/Fs window_size/Fs -1.5 1.5]);
-        
-        rng('default')
-        random_templates = randi(length(templates),5,5);
-        
-        figure
-        for i = 1:25
-            subplot(5,5,i);
-            plot(w,templates(random_templates(i),:),'r','linewidth',2)
-            axis([1/Fs window_size/Fs -2 2]);
-        end
+        legend('Detected Spike','Best Match Template')
         
         
-        %%
-        
-        spikes_isolated = spikes(not(overlapped_logical),:);
-        label_isolated = label_template(not(overlapped_logical));
-        
-        spikes_overlapped = spikes(overlapped_logical,:);
-        label_overlapped = label_template(overlapped_logical);
-        
-        figure;
-        subplot(1,2,1)
-        plot(w,spikes_isolated(label_isolated == 1,:),'r'); hold on;
-        plot(w,spikes_isolated(label_isolated == 2,:),'g'); hold on;
-        plot(w,spikes_isolated(label_isolated == 3,:),'b'); hold on;
-        title('Isolated Spike Waveforms')
-        xlabel('Time (s)')
-        ylabel('Voltage (uV)')
-        
-        subplot(1,2,2)
-        plot(w,spikes_overlapped(label_overlapped == 1,:),'r'); hold on;
-        plot(w,spikes_overlapped(label_overlapped == 2,:),'g'); hold on;
-        plot(w,spikes_overlapped(label_overlapped == 3,:),'b'); hold on;
-        title('Non-Isolated (Overlapped) Spike Waveforms')
-        xlabel('Time (s)')
-        ylabel('Voltage (uV)')
+        %% Template Construction
         
     end
     
@@ -182,27 +124,19 @@ end
 
 
 %%
-precision_benchmark = precision_benchmark';
-precision_standard = precision_standard';
 
-recall_benchmark = recall_benchmark';
-recall_standard = recall_standard';
-
-accuracy_benchmark = accuracy_benchmark';
-accuracy_standard = accuracy_standard';
+results_precision = [precision_standard' precision_standard'];
+results_recall = [recall_standard' recall_benchmark']; 
+results_accuracy = [accuracy_standard' accuracy_benchmark'];
 
 figure;
-subplot(3,1,1)
-bar(precision_benchmark); hold on;
-bar(precision_standard); 
+bar(results_precision);
 legend('With Module','Without Module')
 
-subplot(3,1,2)
-bar(recall_benchmark); hold on;
-bar(recall_standard); 
+figure
+bar(results_recall); hold on;
 legend('With Module','Without Module')
 
-subplot(3,1,3)
-bar(accuracy_benchmark); hold on;
-bar(accuracy_standard); 
+figure
+bar(results_accuracy); hold on;
 legend('With Module','Without Module')

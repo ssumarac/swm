@@ -17,8 +17,6 @@ for k = 1:size(spikes,1)
     [min_distance(k), overlapped_label(k)] = min(tot_d);
 end
 
-
-
 P = perms(1:max(kmeans_label));
 P = [P(:,end-1:end); [1:max(kmeans_label); 1:max(kmeans_label)]'];
 P = sortrows(P);
@@ -46,9 +44,6 @@ for d = 0:(max(kmeans_label))^2 - 1
     end
 end
 
-overlapped_logical = (overlapped_label <= (max(overlapped_label) - 3));
-
-overlapped_logical = overlapped_logical';
 label_template = label_template';
 
 

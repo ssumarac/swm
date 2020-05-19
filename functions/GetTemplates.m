@@ -6,6 +6,7 @@ if trigger == 1
     figure
 end
 
+figure
 for a = 1:max(label)
     for b = 1:max(label)
         template(b,:) = median(spikes_init(label == b,:));
@@ -18,7 +19,7 @@ for a = 1:max(label)
             overlapped_template(c,:) = temp3(:,window_size_init/2 + 1:length(temp1) - window_size_init/2);
             
             if trigger == 1
-                plot((1:window_size_init)*1000/24000,overlapped_template(c,:),'r*-');
+                plot((1:window_size_init)/24000,overlapped_template(c,:),'r*-');
                 axis([1*1000/24000 window_size_init*1000/24000 -2 2])
                 title('Construction of Overlapped Spike Templates')
                 xlabel('Time (ms)')
@@ -26,6 +27,39 @@ for a = 1:max(label)
                 %drawnow;
                 %pause(0.02)
                 M(c) = getframe;
+            end
+            
+            if c == 244
+                subplot(1,3,2)
+                plot((1:window_size_init)/24000,overlapped_template(c,:),'k'); hold on;
+                plot((1:window_size_init)/24000,temp1(a,window_size_init/2 + 1:length(temp1) - window_size_init/2),'b'); hold on;
+                plot((1:window_size_init)/24000,temp2(window_size_init/2 + 1:length(temp1) - window_size_init/2),'g'); hold on;
+                legend('Superimposed Template', 'Spike Template #3', 'Spike Template #2')
+                title('Construction of Template #244')
+                xlabel('Time (ms)')
+                ylabel('Voltage (uV)')
+            end
+            
+            if c == 242
+                subplot(1,3,1)
+                plot((1:window_size_init)/24000,overlapped_template(c,:),'k'); hold on;
+                plot((1:window_size_init)/24000,temp1(a,window_size_init/2 + 1:length(temp1) - window_size_init/2),'b'); hold on;
+                plot((1:window_size_init)/24000,temp2(window_size_init/2 + 1:length(temp1) - window_size_init/2),'g'); hold on;
+                legend('Superimposed Template', 'Spike Template #3', 'Spike Template #2')
+                title('Construction of Template #242')
+                xlabel('Time (ms)')
+                ylabel('Voltage (uV)')
+            end
+            
+            if c == 120
+                subplot(1,3,3)
+                plot((1:window_size_init)/24000,overlapped_template(c,:),'k'); hold on;
+                plot((1:window_size_init)/24000,temp1(a,window_size_init/2 + 1:length(temp1) - window_size_init/2),'r'); hold on;
+                plot((1:window_size_init)/24000,temp2(window_size_init/2 + 1:length(temp1) - window_size_init/2),'g'); hold on;
+                legend('Superimposed Template', 'Spike Template #1', 'Spike Template #2')
+                title('Construction of Template #120')
+                xlabel('Time (ms)')
+                ylabel('Voltage (uV)')
             end
             
             c = c + 1;

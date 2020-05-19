@@ -1,6 +1,8 @@
 clear all; close all; clc;
 
-for h = 1
+ISI_tot = [];
+
+for h = 1:16
     %% LOAD DATA
     [X, Fs, GT] = GetData(h);
     
@@ -18,22 +20,15 @@ for h = 1
     [spikes_init, spikes, index] = GetSpikes(X,window_size_init,threshold);
     
     %% ISOLATION
-    ISI = zeros(1,length(index));
-    OL = zeros(1,length(index));
+    %ISI = zeros(1,length(index));
     for i = 2:length(index)
-        ISI(h,i) = 1000*(index(i) - index(i-1))/Fs;
-        
-        if ISI(h,i) < 1.5
-            OL(i) = 1;
-            OL(i-1) = 1;
-        end
+        ISI(i) = 1000*(index(i) - index(i-1))/Fs;
     end
-    OL = logical(OL);
     
-    figure
-    hist = histogram(ISI,'Normalization','probability')
-    xlabel('Time (ms)')
-    ylabel('Probability')
+    Prob_Overlapped(h) = sum(ISI < 1)/length(ISI);
+    Prob_Overlapped = Prob_Overlapped';
+    
+    ISI_tot = [ISI_tot ISI];
     
     %% DO CLUSTERING
     [label, features] = DoClustering(spikes,clustering_method,clusters);
@@ -147,7 +142,16 @@ n_match_s = n_match_s';
 n_miss_s = n_miss_s';
 n_fp_s = n_fp_s';
 
-%% 
+figure
+histogram(ISI_tot,'Normalization','probability')
+title('Interspike Interval (ISI) of Combined Datasets')
+xlabel('Time (ms)')
+ylabel('Probability')
+axis([-5 100 0 0.1])
+
+Pr = sum(ISI_tot < 1)/length(ISI_tot)
+
+%%
 % X1 = GetData(1);
 % X2 = GetData(2);
 % X3 = GetData(3);
@@ -164,8 +168,8 @@ n_fp_s = n_fp_s';
 % X14 = GetData(14);
 % X15 = GetData(15);
 % X16 = GetData(16);
-% 
-% figure; 
+%
+% figure;
 % plot(X1(1:Fs)); hold on;
 % plot(X2(1:Fs) + 3); hold on;
 % plot(X3(1:Fs) + 6); hold on;

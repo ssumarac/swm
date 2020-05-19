@@ -6,7 +6,7 @@ if trigger == 1
     figure
 end
 
-figure
+%figure
 for a = 1:max(label)
     for b = 1:max(label)
         template(b,:) = median(spikes_init(label == b,:));
@@ -28,7 +28,7 @@ for a = 1:max(label)
                 %pause(0.02)
                 M(c) = getframe;
             end
-            
+            %{
             if c == 244
                 subplot(1,3,2)
                 plot((1:window_size_init)/24000,overlapped_template(c,:),'k'); hold on;
@@ -61,6 +61,7 @@ for a = 1:max(label)
                 xlabel('Time (ms)')
                 ylabel('Voltage (uV)')
             end
+            %}
             
             c = c + 1;
         end

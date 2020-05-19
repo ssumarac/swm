@@ -10,7 +10,7 @@ for h = 1
     clusters = 3;
     delta_t = 1e-3*Fs;
     
-    to_plot = 1;
+    to_plot = 0;
     to_record = 0;
     clustering_method = 1;
     
@@ -31,7 +31,7 @@ for h = 1
     output_benchmark = [index label_template];
     
     fprintf('\nBENCHMARK\n');
-    [precision_benchmark(h), recall_benchmark(h), accuracy_benchmark(h)] = EvaluatePerformance(GT(:,1), GT(:,2), output_benchmark(:,1), output_benchmark(:,2), delta_t);
+    [n_match_b(h), n_miss_b(h), n_fp_b(h)] = EvaluatePerformance(GT(:,1), GT(:,2), output_benchmark(:,1), output_benchmark(:,2), delta_t);
     
     
     %%  EVALUATE STANDARD PERFORMANCE
@@ -39,7 +39,7 @@ for h = 1
     output_standard = [index label];
     
     fprintf('\nSTANDARD\n');
-    [precision_standard(h), recall_standard(h), accuracy_standard(h)] = EvaluatePerformance(GT(:,1), GT(:,2), output_standard(:,1), output_standard(:,2), delta_t);
+    [n_match_s(h), n_miss_s(h), n_fp_s(h)] = EvaluatePerformance(GT(:,1), GT(:,2), output_standard(:,1), output_standard(:,2), delta_t);
     
     SNR(h) = ceil(mean(max(spikes'))/(median(abs(X))/0.6745));
     
@@ -62,11 +62,18 @@ for h = 1
         ylabel('Voltage (uV)')
         
         figure;
-        plot(1:window_size,spikes);
+        plot(w,spikes,'k');
         title('Extracted Spikes from Filtered Signal')
-        xlabel('Time (s)')
+        xlabel('Time (ms)')
         ylabel('Voltage (uV)')
         
+        for i = 1:length(index) - 1
+            ISI(h,i) = 1000*(index(i+1) - index(i))/Fs;
+        end
+        
+        figure
+        hist = histogram(ISI,'Normalization','probability')
+        xlabel('Time (ms)')
         
         %% Initial Spike Classification
         figure;
@@ -115,28 +122,18 @@ for h = 1
         axis([1/Fs window_size/Fs -1.5 1.5]);
         legend('Detected Spike','Best Match Template')
         
-        
-        %% Template Construction
-        
     end
     
+    n_GT(h) = length(GT);
+   
 end
 
 
-%%
 
-results_precision = [precision_standard' precision_standard'];
-results_recall = [recall_standard' recall_benchmark']; 
-results_accuracy = [accuracy_standard' accuracy_benchmark'];
+n_match_b = n_match_b';
+n_miss_b = n_miss_b';
+n_fp_b = n_fp_b';
 
-figure;
-bar(results_precision);
-legend('With Module','Without Module')
-
-figure
-bar(results_recall); hold on;
-legend('With Module','Without Module')
-
-figure
-bar(results_accuracy); hold on;
-legend('With Module','Without Module')
+n_match_s = n_match_s';
+n_miss_s = n_miss_s';
+n_fp_s = n_fp_s';

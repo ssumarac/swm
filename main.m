@@ -17,6 +17,24 @@ for h = 1
     %% DETECT SPIKES
     [spikes_init, spikes, index] = GetSpikes(X,window_size_init,threshold);
     
+    %% ISOLATION
+    ISI = zeros(1,length(index));
+    OL = zeros(1,length(index));
+    for i = 2:length(index)
+        ISI(h,i) = 1000*(index(i) - index(i-1))/Fs;
+        
+        if ISI(h,i) < 1.5
+            OL(i) = 1;
+            OL(i-1) = 1;
+        end
+    end
+    OL = logical(OL);
+    
+    figure
+    hist = histogram(ISI,'Normalization','probability')
+    xlabel('Time (ms)')
+    ylabel('Probability')
+    
     %% DO CLUSTERING
     [label, features] = DoClustering(spikes,clustering_method,clusters);
     
@@ -67,13 +85,6 @@ for h = 1
         xlabel('Time (ms)')
         ylabel('Voltage (uV)')
         
-        for i = 1:length(index) - 1
-            ISI(h,i) = 1000*(index(i+1) - index(i))/Fs;
-        end
-        
-        figure
-        hist = histogram(ISI,'Normalization','probability')
-        xlabel('Time (ms)')
         
         %% Initial Spike Classification
         figure;
@@ -125,10 +136,8 @@ for h = 1
     end
     
     n_GT(h) = length(GT);
-   
+    
 end
-
-
 
 n_match_b = n_match_b';
 n_miss_b = n_miss_b';
@@ -137,3 +146,46 @@ n_fp_b = n_fp_b';
 n_match_s = n_match_s';
 n_miss_s = n_miss_s';
 n_fp_s = n_fp_s';
+
+%% 
+% X1 = GetData(1);
+% X2 = GetData(2);
+% X3 = GetData(3);
+% X4 = GetData(4);
+% X5 = GetData(5);
+% X6 = GetData(6);
+% X7 = GetData(7);
+% X8 = GetData(8);
+% X9 = GetData(9);
+% X10 = GetData(10);
+% X11 = GetData(11);
+% X12 = GetData(12);
+% X13 = GetData(13);
+% X14 = GetData(14);
+% X15 = GetData(15);
+% X16 = GetData(16);
+% 
+% figure; 
+% plot(X1(1:Fs)); hold on;
+% plot(X2(1:Fs) + 3); hold on;
+% plot(X3(1:Fs) + 6); hold on;
+% plot(X4(1:Fs) + 9); hold on;
+% plot(X5(1:Fs) + 12); hold on;
+% plot(X6(1:Fs) + 15); hold on;
+% plot(X7(1:Fs) + 18); hold on;
+% plot(X8(1:Fs) + 21); hold on;
+% plot(X9(1:Fs) + 24); hold on;
+% plot(X10(1:Fs) + 27); hold on;
+% plot(X11(1:Fs) + 30); hold on;
+% plot(X12(1:Fs) + 33); hold on;
+% plot(X13(1:Fs) + 36); hold on;
+% plot(X14(1:Fs) + 39); hold on;
+% plot(X15(1:Fs) + 42); hold on;
+% plot(X16(1:Fs) + 45); hold on;
+
+
+
+
+
+
+

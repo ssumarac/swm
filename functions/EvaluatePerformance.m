@@ -1,4 +1,4 @@
-function [precision recall accuracy] = EvaluatePerformance(spike_times, spike_class_1, locs, idx, delta_t)
+function [n_2, n_1, n_3] = EvaluatePerformance(spike_times, spike_class_1, locs, idx, delta_t)
 
 s = spike_times;
 
@@ -88,18 +88,6 @@ n_3 = n_3(i_max);
 precision = precision(i_max); 
 recall = recall(i_max); 
 accuracy = accuracy(i_max);
-
-% fprintf('n_match_1 = %d\n',n_match_1)
-% fprintf('n_match_2 = %d\n',n_match_2)
-% fprintf('n_match_3 = %d\n',n_match_3)
-% 
-% fprintf('n_miss_1 = %d\n',n_miss_1)
-% fprintf('n_miss_2 = %d\n',n_miss_2)
-% fprintf('n_miss_3 = %d\n',n_miss_3)
-% 
-% fprintf('n_fp_1 = %d\n',n_fp_1)
-% fprintf('n_fp_2 = %d\n',n_fp_2)
-% fprintf('n_fp_3 = %d\n',n_fp_3)
 
 fprintf('Precision = %0.2f%%\n',precision*100)
 fprintf('Recall = %0.2f%%\n',recall*100)

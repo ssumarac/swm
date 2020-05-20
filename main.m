@@ -1,6 +1,13 @@
 clear all; close all; clc;
 
 ISI_tot = [];
+n_match_b = zeros(1,16);
+n_miss_b = zeros(1,16);
+n_fp_b = zeros(1,16);
+
+n_match_s = zeros(1,16);
+n_miss_s = zeros(1,16);
+n_fp_s = zeros(1,16);
 
 for h = 1:16
     %% LOAD DATA
@@ -14,34 +21,48 @@ for h = 1:16
     
     to_plot = 0;
     to_record = 0;
-    clustering_method = 1;
+    clustering_method = 2;
+    overlapped = 0;
     
     %% DETECT SPIKES
     [spikes_init, spikes, index] = GetSpikes(X,window_size_init,threshold);
     
     %% ISOLATION
-    %ISI = zeros(1,length(index));
-    for i = 2:length(index)
-        ISI(i) = 1000*(index(i) - index(i-1))/Fs;
-    end
+    [ISI, OL] = IsolateSpikes(index,1,Fs);
+    [ISI_GT, OL_GT] = IsolateSpikes(GT(:,1),1,Fs);
     
-    Prob_Overlapped(h) = sum(ISI < 1)/length(ISI);
-    Prob_Overlapped = Prob_Overlapped';
+    figure;
+    plot((1:window_size_init/2)/Fs,spikes(not(OL),:),'k');
+    title('Extracted Spikes from Filtered Signal')
+    xlabel('Time (ms)')
+    ylabel('Voltage (uV)')
     
-    ISI_tot = [ISI_tot ISI];
+    %     figure
+    %     histogram(ISI_tot,'Normalization','probability')
+    %     title('Interspike Interval (ISI) of Combined Datasets')
+    %     xlabel('Time (ms)')
+    %     ylabel('Probability')
     
     %% DO CLUSTERING
     [label, features] = DoClustering(spikes,clustering_method,clusters);
     
     %% BUILD OVERLAPPING TEMPLATES
-    [templates, window_size, spikes] = GetTemplates(window_size_init,spikes_init,label,to_record);
+    [templates, window_size] = GetTemplates(window_size_init,spikes_init(not(OL),:),label(not(OL)),to_record);
     
     %% CORRELATION TEMPLATE MATCHING
     [label_template, min_distance,overlapped_label] = TemplateMatching(spikes,templates,label,window_size);
     
     %%  EVALUATE BENCHMARK PERFORMANCE
+    if overlapped == 1
+        GT = GT(OL_GT,:);
+    end
+    
+    %label_template(not(OL)) = label(not(OL));
     
     output_benchmark = [index label_template];
+    if overlapped == 1
+        output_benchmark = output_benchmark(OL,:);
+    end
     
     fprintf('\nBENCHMARK\n');
     [n_match_b(h), n_miss_b(h), n_fp_b(h)] = EvaluatePerformance(GT(:,1), GT(:,2), output_benchmark(:,1), output_benchmark(:,2), delta_t);
@@ -50,6 +71,9 @@ for h = 1:16
     %%  EVALUATE STANDARD PERFORMANCE
     
     output_standard = [index label];
+    if overlapped == 1
+        output_standard = output_standard(OL,:);
+    end
     
     fprintf('\nSTANDARD\n');
     [n_match_s(h), n_miss_s(h), n_fp_s(h)] = EvaluatePerformance(GT(:,1), GT(:,2), output_standard(:,1), output_standard(:,2), delta_t);
@@ -142,14 +166,19 @@ n_match_s = n_match_s';
 n_miss_s = n_miss_s';
 n_fp_s = n_fp_s';
 
-figure
-histogram(ISI_tot,'Normalization','probability')
-title('Interspike Interval (ISI) of Combined Datasets')
-xlabel('Time (ms)')
-ylabel('Probability')
-axis([-5 100 0 0.1])
+precision_b = n_match_b./(n_match_b + n_fp_b);
+recall_b = n_match_b./(n_match_b + n_miss_b);
+accuracy_b = n_match_b./(n_match_b + n_miss_b + n_fp_b);
 
-Pr = sum(ISI_tot < 1)/length(ISI_tot)
+precision_s = n_match_s./(n_match_s + n_fp_s);
+recall_s = n_match_s./(n_match_s + n_miss_s);
+accuracy_s = n_match_s./(n_match_s + n_miss_s + n_fp_s);
+
+results = [precision_b recall_b accuracy_b precision_s recall_s accuracy_s];
+
+improvement_precision = mean(precision_b - precision_s)*100
+improvement_recall = mean(recall_b - recall_s)*100
+improvement_accuracy = mean(accuracy_b - accuracy_s)*100
 
 %%
 % X1 = GetData(1);

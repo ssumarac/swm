@@ -1,4 +1,4 @@
-function [templates, window_size, spikes] = template(window_size_init,spikes_init,label,trigger)
+function [templates, window_size] = template(window_size_init,spikes_init,label,trigger)
 
 c = 1;
 
@@ -79,7 +79,6 @@ templates = [overlapped_template; template];
 
 templates = templates(:,1+window_size_init/4:window_size_init - window_size_init/4);
 window_size = window_size_init/2;
-spikes = spikes_init(:,1+window_size_init/4:window_size_init - window_size_init/4);
 
 
 end

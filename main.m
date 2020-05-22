@@ -9,7 +9,7 @@ n_match_s = zeros(1,16);
 n_miss_s = zeros(1,16);
 n_fp_s = zeros(1,16);
 
-for h = 1:16
+for h = 1
     %% LOAD DATA
     [X, Fs, GT] = GetData(h);
     
@@ -31,11 +31,11 @@ for h = 1:16
     [ISI, OL] = IsolateSpikes(index,1,Fs);
     [ISI_GT, OL_GT] = IsolateSpikes(GT(:,1),1,Fs);
     
-    figure;
-    plot((1:window_size_init/2)/Fs,spikes(not(OL),:),'k');
-    title('Extracted Spikes from Filtered Signal')
-    xlabel('Time (ms)')
-    ylabel('Voltage (uV)')
+    %     figure;
+    %     plot((1:window_size_init/2)/Fs,spikes(not(OL),:),'k');
+    %     title('Extracted Spikes from Filtered Signal')
+    %     xlabel('Time (ms)')
+    %     ylabel('Voltage (uV)')
     
     %     figure
     %     histogram(ISI_tot,'Normalization','probability')
@@ -179,46 +179,5 @@ results = [precision_b recall_b accuracy_b precision_s recall_s accuracy_s];
 improvement_precision = mean(precision_b - precision_s)*100
 improvement_recall = mean(recall_b - recall_s)*100
 improvement_accuracy = mean(accuracy_b - accuracy_s)*100
-
-%%
-% X1 = GetData(1);
-% X2 = GetData(2);
-% X3 = GetData(3);
-% X4 = GetData(4);
-% X5 = GetData(5);
-% X6 = GetData(6);
-% X7 = GetData(7);
-% X8 = GetData(8);
-% X9 = GetData(9);
-% X10 = GetData(10);
-% X11 = GetData(11);
-% X12 = GetData(12);
-% X13 = GetData(13);
-% X14 = GetData(14);
-% X15 = GetData(15);
-% X16 = GetData(16);
-%
-% figure;
-% plot(X1(1:Fs)); hold on;
-% plot(X2(1:Fs) + 3); hold on;
-% plot(X3(1:Fs) + 6); hold on;
-% plot(X4(1:Fs) + 9); hold on;
-% plot(X5(1:Fs) + 12); hold on;
-% plot(X6(1:Fs) + 15); hold on;
-% plot(X7(1:Fs) + 18); hold on;
-% plot(X8(1:Fs) + 21); hold on;
-% plot(X9(1:Fs) + 24); hold on;
-% plot(X10(1:Fs) + 27); hold on;
-% plot(X11(1:Fs) + 30); hold on;
-% plot(X12(1:Fs) + 33); hold on;
-% plot(X13(1:Fs) + 36); hold on;
-% plot(X14(1:Fs) + 39); hold on;
-% plot(X15(1:Fs) + 42); hold on;
-% plot(X16(1:Fs) + 45); hold on;
-
-
-
-
-
 
 

@@ -18,6 +18,7 @@ for h = 1
     threshold = 4*median(abs(X))/0.6745;
     clusters = 3;
     delta_t = 1e-3*Fs;
+    corr_cutoff = 0.9;
     
     to_plot = 0;
     to_record = 0;
@@ -44,12 +45,13 @@ for h = 1
     %     ylabel('Probability')
     
     %% DO CLUSTERING
-    [label, features] = DoClustering(spikes,clustering_method,clusters);
+    %[label, features] = DoClustering(spikes,clustering_method,clusters);
+    label = Classification(spikes,corr_cutoff,clusters);
     
     %% BUILD OVERLAPPING TEMPLATES
-    [templates, window_size] = GetTemplates(window_size_init,spikes_init(not(OL),:),label(not(OL)),to_record);
+    [templates, window_size] = GetTemplates(window_size_init,spikes_init,label,to_record);
     
-    %% CORRELATION TEMPLATE MATCHING
+    %% TEMPLATE MATCHING
     [label_template, min_distance,overlapped_label] = TemplateMatching(spikes,templates,label,window_size);
     
     %%  EVALUATE BENCHMARK PERFORMANCE
@@ -57,9 +59,10 @@ for h = 1
         GT = GT(OL_GT,:);
     end
     
-    %label_template(not(OL)) = label(not(OL));
+    label_benchmark = label;
+    label_benchmark(label == -1) = label_template(label == -1);
     
-    output_benchmark = [index label_template];
+    output_benchmark = [index label_benchmark];
     if overlapped == 1
         output_benchmark = output_benchmark(OL,:);
     end

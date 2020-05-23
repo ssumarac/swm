@@ -1,4 +1,4 @@
-function label = classification(spikes,corr_cutoff)
+function label = Classification(spikes,corr_cutoff,clusters)
 x = 1;
 
 similarity = corrcoef(spikes(2,:),spikes(1,:));
@@ -28,24 +28,35 @@ for k = 3:length(spikes)
         end
         
     end
-    
 end
 
 for kk = 1:x
     tempo(kk) = sum(label_test == kk);
 end
 
-cluster_cut = mean(tempo) + 3*std(tempo);
+%{
+[maxk_val maxk_ind] = maxk(tempo,clusters);
+
+label_test(not(ismember(label_test, maxk_ind))) = -1;
+
+for d = 1:length(maxk_ind)
+    label_test(ismember(label_test, maxk_ind(d))) = d;
+end
+
+label = label_test';
+%}
+
+cluster_cut = mad(tempo);
 
 x_array = 1:x;
 x_array_cut = x_array(tempo > cluster_cut);
 
-label_test(not(ismember(label_test, x_array_cut))) = -1
+label_test(not(ismember(label_test, x_array_cut))) = -1;
 
 for d = 1:length(x_array_cut)
     label_test(ismember(label_test, x_array_cut(d))) = d;
 end
 
-label = label_test;
+label = label_test';
 
 end

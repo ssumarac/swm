@@ -49,8 +49,7 @@ for h = 1
     legend('Histogram','Fitted Distribution')
     
     %% DO CLUSTERING
-    [label, features] = DoClustering(spikes,clustering_method,clusters);
-    %label = Classification(spikes,corr_cutoff,clusters);
+    [label, features] = DoClustering(spikes,clustering_method,clusters,corr_cutoff);
     
     %% BUILD OVERLAPPING TEMPLATES
     [templates, window_size] = GetTemplates(window_size_init,spikes_init,label,to_record);

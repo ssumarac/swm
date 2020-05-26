@@ -1,4 +1,4 @@
-function [label features] = DoClustering(spikes,clustering_method,clusters)
+function [label features] = DoClustering(spikes,clustering_method,clusters,corr_cutoff)
 
 [coeff,score,latent] = pca(spikes);
 features = [score(:,1) score(:,2)];
@@ -18,6 +18,8 @@ elseif clustering_method == 3
     epsilon = clusterDBSCAN.estimateEpsilon(spikes,2,minPts);
     label = dbscan(spikes,epsilon,minPts);
     
+elseif clustering_method == 4
+    label = Classification(spikes,corr_cutoff,clusters);
 end
 
 end

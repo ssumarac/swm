@@ -22,7 +22,7 @@ for h = 1
     
     to_plot = 0;
     to_record = 0;
-    clustering_method = 2;
+    clustering_method = 1;
     overlapped = 0;
     
     %% DETECT SPIKES
@@ -32,21 +32,25 @@ for h = 1
     [ISI, OL] = IsolateSpikes(index,1,Fs);
     [ISI_GT, OL_GT] = IsolateSpikes(GT(:,1),1,Fs);
     
+    ISI_tot = [ISI_tot; ISI'];
+    
     %     figure;
     %     plot((1:window_size_init/2)/Fs,spikes(not(OL),:),'k');
     %     title('Extracted Spikes from Filtered Signal')
     %     xlabel('Time (ms)')
     %     ylabel('Voltage (uV)')
-    
-    %     figure
-    %     histogram(ISI_tot,'Normalization','probability')
-    %     title('Interspike Interval (ISI) of Combined Datasets')
-    %     xlabel('Time (ms)')
-    %     ylabel('Probability')
+    %
+    figure
+    histfit(ISI_tot,100,'exponential'); hold on;
+    histogram(ISI_tot,'Normalization','probability');
+    title('Interspike Interval (ISI)')
+    xlabel('Time (ms)')
+    ylabel('Probability')
+    legend('Histogram','Fitted Distribution')
     
     %% DO CLUSTERING
-    %[label, features] = DoClustering(spikes,clustering_method,clusters);
-    label = Classification(spikes,corr_cutoff,clusters);
+    [label, features] = DoClustering(spikes,clustering_method,clusters);
+    %label = Classification(spikes,corr_cutoff,clusters);
     
     %% BUILD OVERLAPPING TEMPLATES
     [templates, window_size] = GetTemplates(window_size_init,spikes_init,label,to_record);
@@ -59,8 +63,8 @@ for h = 1
         GT = GT(OL_GT,:);
     end
     
-    label_benchmark = label;
-    label_benchmark(label == -1) = label_template(label == -1);
+    label_benchmark = label_template;
+    %label_benchmark(label == -1) = label_template(label == -1);
     
     output_benchmark = [index label_benchmark];
     if overlapped == 1
@@ -92,6 +96,7 @@ for h = 1
         %% Spike Detection
         t = (1:length(X))/Fs;
         w = (1:window_size)/Fs;
+        w2 = (1:window_size_init)/Fs;
         
         figure;
         plot(t,X,'k'); hold on;
@@ -100,6 +105,7 @@ for h = 1
         title('Filtered Signal from Single Electrode Channel')
         xlabel('Time (s)')
         ylabel('Voltage (uV)')
+        legend('Filtered Data','Detected Peaks','Threshold')
         
         figure;
         plot(w,spikes,'k');
@@ -107,6 +113,11 @@ for h = 1
         xlabel('Time (ms)')
         ylabel('Voltage (uV)')
         
+        figure;
+        plot(w2,spikes_init,'k');
+        title('Extracted Spikes from Filtered Signal')
+        xlabel('Time (ms)')
+        ylabel('Voltage (uV)')
         
         %% Initial Spike Classification
         figure;
@@ -125,6 +136,25 @@ for h = 1
         xlabel('Time (s)')
         ylabel('Voltage (uV)')
         legend('Spike Template #1','Spike Template #2','Spike Template #3')
+        
+        figure;
+        plot(w,rmoutliers(spikes(label == 1,:)),'r');
+        title('Spike Cluster #1')
+        xlabel('Time (s)')
+        ylabel('Voltage (uV)')
+        
+        figure
+        plot(w,rmoutliers(spikes(label == 2,:)),'g');
+        title('Spike Cluster #2')
+        xlabel('Time (s)')
+        ylabel('Voltage (uV)')
+        
+        figure
+        plot(w,rmoutliers(spikes(label == 3,:)),'b');
+        title('Spike Cluster #3')
+        xlabel('Time (s)')
+        ylabel('Voltage (uV)')
+        
         
         %% Template Matching
         figure
@@ -159,6 +189,22 @@ for h = 1
     
     n_GT(h) = length(GT);
     
+%     figure
+%     subplot(1,2,1)
+%     gscatter(features(:,1),features(:,2),label)
+%     title('Low-dimensional Space')
+%     xlabel('First Principle Component')
+%     ylabel('Second Principle Component')
+%     
+%     subplot(1,2,2)
+%     plot(w,median(spikes(label == 1,:)),'r'); hold on;
+%     plot(w,median(spikes(label == 2,:)),'g'); hold on;
+%     plot(w,median(spikes(label == 3,:)),'b');
+%     title('Template waveforms')
+%     xlabel('Time (s)')
+%     ylabel('Voltage (uV)')
+%     legend('1','2','3')
+    
 end
 
 n_match_b = n_match_b';
@@ -182,5 +228,4 @@ results = [precision_b recall_b accuracy_b precision_s recall_s accuracy_s];
 improvement_precision = mean(precision_b - precision_s)*100
 improvement_recall = mean(recall_b - recall_s)*100
 improvement_accuracy = mean(accuracy_b - accuracy_s)*100
-
 

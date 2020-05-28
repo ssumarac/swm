@@ -23,7 +23,7 @@ for h = 1
     to_plot = 0;
     to_record = 0;
     clustering_method = 1;
-    overlapped = 0;
+    overlapped = 1;
     
     %% DETECT SPIKES
     [spikes_init, spikes, index] = GetSpikes(X,window_size_init,threshold);
@@ -32,7 +32,7 @@ for h = 1
     [ISI, OL] = IsolateSpikes(index,1,Fs);
     [ISI_GT, OL_GT] = IsolateSpikes(GT(:,1),1,Fs);
     
-    ISI_tot = [ISI_tot; ISI'];
+    %     ISI_tot = [ISI_tot; ISI'];
     
     %     figure;
     %     plot((1:window_size_init/2)/Fs,spikes(not(OL),:),'k');
@@ -40,13 +40,13 @@ for h = 1
     %     xlabel('Time (ms)')
     %     ylabel('Voltage (uV)')
     %
-    figure
-    histfit(ISI_tot,100,'exponential'); hold on;
-    histogram(ISI_tot,'Normalization','probability');
-    title('Interspike Interval (ISI)')
-    xlabel('Time (ms)')
-    ylabel('Probability')
-    legend('Histogram','Fitted Distribution')
+    %     figure
+    %     histfit(ISI_tot,100,'exponential'); hold on;
+    %     histogram(ISI_tot,'Normalization','probability');
+    %     title('Interspike Interval (ISI)')
+    %     xlabel('Time (ms)')
+    %     ylabel('Probability')
+    %     legend('Histogram','Fitted Distribution')
     
     %% DO CLUSTERING
     [label, features] = DoClustering(spikes,clustering_method,clusters,corr_cutoff);
@@ -188,21 +188,21 @@ for h = 1
     
     n_GT(h) = length(GT);
     
-%     figure
-%     subplot(1,2,1)
-%     gscatter(features(:,1),features(:,2),label)
-%     title('Low-dimensional Space')
-%     xlabel('First Principle Component')
-%     ylabel('Second Principle Component')
-%     
-%     subplot(1,2,2)
-%     plot(w,median(spikes(label == 1,:)),'r'); hold on;
-%     plot(w,median(spikes(label == 2,:)),'g'); hold on;
-%     plot(w,median(spikes(label == 3,:)),'b');
-%     title('Template waveforms')
-%     xlabel('Time (s)')
-%     ylabel('Voltage (uV)')
-%     legend('1','2','3')
+    %     figure
+    %     subplot(1,2,1)
+    %     gscatter(features(:,1),features(:,2),label)
+    %     title('Low-dimensional Space')
+    %     xlabel('First Principle Component')
+    %     ylabel('Second Principle Component')
+    %
+    %     subplot(1,2,2)
+    %     plot(w,median(spikes(label == 1,:)),'r'); hold on;
+    %     plot(w,median(spikes(label == 2,:)),'g'); hold on;
+    %     plot(w,median(spikes(label == 3,:)),'b');
+    %     title('Template waveforms')
+    %     xlabel('Time (s)')
+    %     ylabel('Voltage (uV)')
+    %     legend('1','2','3')
     
 end
 
@@ -227,4 +227,33 @@ results = [precision_b recall_b accuracy_b precision_s recall_s accuracy_s];
 improvement_precision = mean(precision_b - precision_s)*100
 improvement_recall = mean(recall_b - recall_s)*100
 improvement_accuracy = mean(accuracy_b - accuracy_s)*100
+
+
+figure
+subplot(3,1,1)
+histfit(ISI(label == 1),100,'exponential'); hold on;
+histogram(ISI(label == 1),'Normalization','probability');
+title('Interspike Interval for Cluster 1')
+xlabel('Time (ms)')
+ylabel('Probability')
+legend('Histogram','Fitted Distribution')
+fitdist(ISI(label == 1)','exponential')
+
+subplot(3,1,2)
+histfit(ISI(label == 2),100,'exponential'); hold on;
+histogram(ISI(label == 2),'Normalization','probability');
+title('Interspike Interval for Cluster 2')
+xlabel('Time (ms)')
+ylabel('Probability')
+legend('Histogram','Fitted Distribution')
+fitdist(ISI(label == 2)','exponential')
+
+subplot(3,1,3)
+histfit(ISI(label == 3),100,'exponential'); hold on;
+histogram(ISI(label == 3),'Normalization','probability');
+title('Interspike Interval for Cluster 3')
+xlabel('Time (ms)')
+ylabel('Probability')
+legend('Histogram','Fitted Distribution')
+fitdist(ISI(label == 3)','exponential')
 

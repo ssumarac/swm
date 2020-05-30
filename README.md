@@ -4,8 +4,3 @@ Spike Sorting is the grouping of similar action potentials in electrophysiologic
 ![](/images/posterpic1.png)
 
 The Synethic Waveform Matching module was designed to reduce the classification errors associated with overlapping spikes in baseline spike sorting algorithms. It works by generating pair-wise combinations of spike templates at all possible time shifts. Then, for each overlapping spike, the algorithm searches for the best matching syntenic waveform and automatically assigns an overlapping spike to a single-unit cluster.  
-
-![](/images/posterpic2.png)
-![](/images/posterpic3.png)
-
-

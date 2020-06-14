@@ -1,3 +1,17 @@
+% TEMPLATE MATCHING FUNCTION
+%
+% Inputs:
+%   - Spikes Matrix
+%   - Spike Templates
+%   - Clustering label
+%   - Window Size
+%
+% Outputs:
+%   - Synethtic Template
+%   - Spike Templates
+%   - Clustering label
+%   - Window Size
+
 function [label_template, min_distance,overlapped_label, overlapped_logical] = TemplateMatching(spikes,templates,kmeans_label,window_size)
 
 weighting = ones(1,window_size);

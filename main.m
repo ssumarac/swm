@@ -1,5 +1,7 @@
 clear all; close all; clc;
 
+%% Initialise Loop
+
 ISI_tot = [];
 n_match_b = zeros(1,16);
 n_miss_b = zeros(1,16);
@@ -9,17 +11,22 @@ n_match_s = zeros(1,16);
 n_miss_s = zeros(1,16);
 n_fp_s = zeros(1,16);
 
-for h = 1
+
+%% Run simulation for all datasets h=1:16
+
+for h = 1:16
+    
     %% LOAD DATA
     [X, Fs, GT] = GetData(h);
     
     %% SET PARAMETERS
-    window_size_init = 3e-3*Fs;
-    threshold = 4*median(abs(X))/0.6745;
-    clusters = 3;
-    delta_t = 1e-3*Fs;
-    corr_cutoff = 0.9;
+    window_size_init = 3e-3*Fs;                 % set the initial window size to 3ms
+    threshold = 4*median(abs(X))/0.6745;        % 4 times the median absolute deviation of the noise component
+    clusters = 3;                               % required for the clustering algorithm (except for dbscan)
+    delta_t = 1e-3*Fs;                          % acceptable error rate
+    %corr_cutoff = 0.9;              
     
+    % switches
     to_plot = 0;
     to_record = 0;
     clustering_method = 1;
@@ -32,22 +39,6 @@ for h = 1
     [ISI, OL] = IsolateSpikes(index,1,Fs);
     [ISI_GT, OL_GT] = IsolateSpikes(GT(:,1),1,Fs);
     
-    %     ISI_tot = [ISI_tot; ISI'];
-    
-    %     figure;
-    %     plot((1:window_size_init/2)/Fs,spikes(not(OL),:),'k');
-    %     title('Extracted Spikes from Filtered Signal')
-    %     xlabel('Time (ms)')
-    %     ylabel('Voltage (uV)')
-    %
-    %     figure
-    %     histfit(ISI_tot,100,'exponential'); hold on;
-    %     histogram(ISI_tot,'Normalization','probability');
-    %     title('Interspike Interval (ISI)')
-    %     xlabel('Time (ms)')
-    %     ylabel('Probability')
-    %     legend('Histogram','Fitted Distribution')
-    
     %% DO CLUSTERING
     [label, features] = DoClustering(spikes,clustering_method,clusters,corr_cutoff);
     
@@ -57,7 +48,8 @@ for h = 1
     %% TEMPLATE MATCHING
     [label_template, min_distance,overlapped_label] = TemplateMatching(spikes,templates,label,window_size);
     
-    %%  EVALUATE BENCHMARK PERFORMANCE
+    %% EVALUATE BENCHMARK PERFORMANCE
+    
     if overlapped == 1
         GT = GT(OL_GT,:);
     end
@@ -206,6 +198,8 @@ for h = 1
     
 end
 
+
+%% Final Performance Evaluation
 n_match_b = n_match_b';
 n_miss_b = n_miss_b';
 n_fp_b = n_fp_b';
@@ -224,11 +218,11 @@ accuracy_s = n_match_s./(n_match_s + n_miss_s + n_fp_s);
 
 results = [precision_b recall_b accuracy_b precision_s recall_s accuracy_s];
 
-improvement_precision = mean(precision_b - precision_s)*100
-improvement_recall = mean(recall_b - recall_s)*100
-improvement_accuracy = mean(accuracy_b - accuracy_s)*100
+improvement_precision = mean(precision_b - precision_s)*100;
+improvement_recall = mean(recall_b - recall_s)*100;
+improvement_accuracy = mean(accuracy_b - accuracy_s)*100;
 
-
+%% Final Plots
 figure
 subplot(3,1,1)
 histfit(ISI(label == 1),100,'exponential'); hold on;

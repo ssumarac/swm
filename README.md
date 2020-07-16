@@ -1,5 +1,5 @@
 # Classification of Overlapping Action Potentials Using Synthetic Waveform Matching
-Spike Sorting is the grouping of similar action potentials in electrophysiological data. Often multiple neurons within the same vicinity fire action potentials simultaneously and corrupt the low-dimensional feature space. Baseline spike sporting algorithms fail to accurately cluster these overlapping waveforms.
+Spike Sorting is the grouping of similar action potentials in electrophysiological data. Often multiple neurons within the same vicinity fire action potentials simultaneously and corrupt the low-dimensional feature space. Baseline spike sorting algorithms fail to accurately cluster these overlapping waveforms.
 
 ![](/images/posterpic1.png)
 
